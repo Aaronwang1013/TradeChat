@@ -1,0 +1,66 @@
+version: "3"
+
+services:
+  zookeeper:
+    image: zookeeper:latest
+    container_name: container_zookeeper
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
+
+  kafka:
+    image: debezium/kafka:latest
+    container_name: container_broker
+    ports:
+      - "9092:9092"
+    environment:
+      - ZOOKEEPER_CONNECT=zookeeper:2181
+    depends_on:
+      - zookeeper
+  
+  python:
+    image: python:3.8.19-bullseye
+    container_name: python_kafka
+    ports:
+      - 8001:80
+    command: sh -c 'pip install kafka && pip install kafka-python && tail -f /dev/null'
+    volumes:
+      - /Users/aaronwang/Desktop/AppWorks/PersonalProject/TradeChat:/app
+
+  kafdrop:
+    container_name: kafdrop
+    environment:
+      KAFKA_BROKERCONNECT: kafka:9092
+    image: obsidiandynamics/kafdrop
+    ports: 
+     - 9000:9000
+  
+  spark:
+    image: bitnami/spark:latest
+    environment:
+      - SPARK_MASTER_URL=spark://spark:7077
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+    ports:
+      - "8080:8080"
+    networks:
+      - custom_network  # Same network as Kafka
+    depends_on:
+      - kafka
+
+
+  grafana:
+      image: grafana/grafana:latest
+      environment:
+        GF_SECURITY_ADMIN_PASSWORD: admin
+      ports:
+        - "3000:3000"
+      networks:
+        - custom_network
+
+networks:
+  custom_network:
+    driver: bridge
