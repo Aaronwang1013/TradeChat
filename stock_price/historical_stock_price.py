@@ -2,8 +2,7 @@ import yfinance as yf
 import pandas as pd
 from pymongo.mongo_client import MongoClient
 from config import Config
-import json
-    
+
 
 
 
@@ -36,5 +35,5 @@ def insert_to_mongo(data):
 
 
 if __name__ == '__main__':
-    tickers = ['AAPL', 'TSLA', 'AAPL', 'NVDA', 'MSFT', 'AMZN', 'META', 'GOOG']
+    tickers = ['AAPL', 'TSLA', 'NVDA', 'MSFT', 'AMZN', 'META', 'GOOG']
     extract_ticker(tickers, '2000-01-01', '2024-04-12')
