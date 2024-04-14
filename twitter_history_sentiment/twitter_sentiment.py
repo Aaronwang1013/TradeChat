@@ -3,8 +3,6 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
-from scipy import stats as stat
 import re
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 vanderSentimentAnalyzer = SentimentIntensityAnalyzer()
