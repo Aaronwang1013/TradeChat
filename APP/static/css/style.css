@@ -1,0 +1,92 @@
+body {
+    background-color: #888382; 
+    margin: 0; 
+    padding: 0; 
+}
+.line{
+    position: absolute;
+    top: 20px;
+    right: 400px;
+    width: 2px;
+    height: 120px;
+    background-color: black;
+}
+.text {
+    position: absolute;
+    top: 20px;
+    right: 100px; 
+    color: black;
+}
+.user-icon {
+    position: fixed; 
+    bottom: 20px;     
+    right: 20px;      
+    width: 50px;      
+    height: 50px;     
+    z-index: 1000;    
+}
+.user-icon img {
+    width: 100%;      
+    height: auto;     
+}
+.header{
+margin-top: 80px;
+}
+.icon-row {
+    width:800px;
+    margin: 100px auto;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;  
+    margin-top: 20px;
+}
+
+.icon-row img {
+    width: 50px; 
+    height: auto;
+}
+
+#welcome-message {
+    text-align: center;
+    transition: opacity 2s ease-in-out;
+}
+
+
+.icon-row img {
+    width: 50px;
+    height: auto;
+    opacity: 0; 
+    animation: fadeIn 1s ease forwards; 
+}
+
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+
+.icon-row img:nth-child(1) { animation-delay: 0.3s; }
+.icon-row img:nth-child(2) { animation-delay: 0.6s; }
+.icon-row img:nth-child(3) { animation-delay: 0.9s; }
+.icon-row img:nth-child(4) { animation-delay: 1.2s; }
+.icon-row img:nth-child(5) { animation-delay: 1.5s; }
+.icon-row img:nth-child(6) { animation-delay: 1.8s; }
+.icon-row img:nth-child(7) { animation-delay: 2.1s; }
+
+#result-image img {
+    width: 100%; 
+    height: auto;
+    display: block;
+    margin: 20px auto;
+}
+
+.company-icon {
+    cursor: pointer;
+    transition: transform 0.3s ease; 
+}
+
+.company-icon:hover {
+    transform: scale(1.1);
+}

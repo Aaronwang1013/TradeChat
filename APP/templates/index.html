@@ -3,29 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>TradeChat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<style>
-body {
-    background-color: #888382; 
-    margin: 0; 
-    padding: 0; 
-}
-.line{
-    position: absolute;
-    top: 20px;
-    right: 400px;
-    width: 2px;
-    height: 120px;
-    background-color: black;
-}
-.text {
-    position: absolute;
-    top: 20px;
-    right: 100px; 
-    color: black;
-}
-</style>
 <body>
     <div class="line"></div>
     <div class="text">
@@ -34,7 +14,27 @@ body {
         <p>Join the discussion!</p>
     </div>
     <div>
-        <h1>Navigate Market Sentiment: Twitter Trends and Stock Correlations</h1>
-    </div>
+        <h1 id="welcome-message" style="opacity: 0;">Welcome to TradeChat</h1>
+        <h1 class="header">Navigate Market Sentiment: Twitter Trends and Stock Correlations</h1>
+        <div class="icon-row">
+            {% for icon in icons %}
+                <img src="{{ url_for('static', filename='images/company/' ~ icon) }}" alt="{{ icon.split('.')[0] }}" class="company-icon" onclick="showResult('{{ icon.split('.')[0] }}')">
+            {% endfor %}
+        </div>
+    </div>    
+    <a href="{{ url_for('signup') }}" class="user-icon">
+        <img src="{{ url_for('static', filename='images/user.png') }}" alt="SignUp">
+    </a>
 </body>
+<script>
+    function showResult(companyName) {
+    var imagePath = '{{ url_for("static", filename="images/results/") }}' + companyName + '_result.png';
+    document.getElementById('result-img').src = imagePath;
+    document.getElementById('result-img').alt = companyName + " Result";
+    }
+
+    window.onload = function() {
+        document.getElementById('welcome-message').style.opacity = 1;
+    };
+</script>
 </html>
