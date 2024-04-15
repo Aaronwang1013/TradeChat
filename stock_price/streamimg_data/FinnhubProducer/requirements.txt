@@ -1,0 +1,8 @@
+websocket_client
+finnhub-python
+avro
+confluent_kafka
+python-dotenv
+pytz
+kafka
+kafka-python

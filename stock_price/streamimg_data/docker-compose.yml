@@ -20,13 +20,13 @@ services:
       - zookeeper
   
   python:
-    image: python:3.8.19-bullseye
+    build: ./FinnhubProducer 
     container_name: python_kafka
     ports:
       - 8001:80
-    command: sh -c 'pip install kafka && pip install kafka-python && tail -f /dev/null'
+    command: sh -c 'pip install kafka-python && tail -f /dev/null'
     volumes:
-      - /Users/aaronwang/Desktop/AppWorks/PersonalProject/TradeChat:/app
+      - ./FinnhubProducer:/app
 
   kafdrop:
     container_name: kafdrop
