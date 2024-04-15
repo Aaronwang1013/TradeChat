@@ -56,6 +56,9 @@ def signup():
             return jsonify({'error': 'Invalid request method'}, 403)
     return render_template('signup.html', form=signupform)
 
+
+@app.route('/user/login', methods=['GET', 'POST'])
+
 @app.route('/stock')
 def about():
     return render_template('stock.html')
