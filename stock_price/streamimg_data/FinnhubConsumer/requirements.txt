@@ -1,0 +1,5 @@
+avro
+fastavro
+confluent_kafka
+requests
+urllib3
