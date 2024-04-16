@@ -9,9 +9,9 @@
 <body>
     <div class="line"></div>
     <div class="text">
-        <p>Why social media sentiment analysis?</p>
-        <p>Real-time stock price and Reddit comment</p>
-        <p>Join the discussion!</p>
+        <p class="hover-effect" id="hover1">Why social media sentiment analysis?</p>
+        <p class="hover-effect" id="hover2">Real-time stock price and Reddit comment</p>
+        <p class="hover-effect" id="hover3">Join the discussion!</p>
     </div>
     <div>
         <h1 id="welcome-message" style="opacity: 0;">Welcome to TradeChat</h1>
@@ -27,10 +27,19 @@
     </a>
 </body>
 <script>
+    var hoverElements = document.querySelectorAll('.hover-effect');
+    hoverElements.forEach(function(element) {
+        element.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.1)';
+        });
+        element.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
     function showResult(companyName) {
-    var imagePath = '{{ url_for("static", filename="images/results/") }}' + companyName + '_result.png';
-    document.getElementById('result-img').src = imagePath;
-    document.getElementById('result-img').alt = companyName + " Result";
+        var imagePath = '{{ url_for("static", filename="images/results/") }}' + companyName + '_result.png';
+        document.getElementById('result-img').src = imagePath;
+        document.getElementById('result-img').alt = companyName + " Result";
     }
 
     window.onload = function() {

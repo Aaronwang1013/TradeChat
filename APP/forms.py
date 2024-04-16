@@ -41,12 +41,6 @@ class SignupForm(FlaskForm):
 
 
 class SigninForm(FlaskForm):
-    name = StringField(
-        'Name',
-        validators=[
-            DataRequired()
-        ]
-    )
     email = StringField(
         'Email',
         validators=[

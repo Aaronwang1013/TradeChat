@@ -59,6 +59,9 @@ margin-top: 80px;
     animation: fadeIn 1s ease forwards; 
 }
 
+#hover1 {
+    color: white;
+}
 
 @keyframes fadeIn {
     to {

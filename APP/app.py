@@ -57,7 +57,33 @@ def signup():
     return render_template('signup.html', form=signupform)
 
 
-@app.route('/user/login', methods=['GET', 'POST'])
+@app.route('/user/signin', methods=['GET', 'POST'])
+def signin():
+    loginform = forms.SigninForm()
+    if request.method == 'POST':
+        if loginform.validate_on_submit():
+            email = loginform.email.data
+            password = loginform.password.data
+
+            # create a MongoClient to the running mongod instance
+            DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0"
+            client = MongoClient(DATABASE_URL)
+            collection = client['TradeChat']['User']
+
+            # find user in the database
+            email = collection.find_one({"email": email})
+            print(email)
+            if email and check_password_hash(email['password'], password):
+                flash('Login Successful. You will now be redirected to the homepage.', 'success')
+                return render_template('signin_success.html')
+            else:
+                flash('Login Unsuccessful. Please check username and password', 'danger')
+
+        return jsonify({'error': 'Invalid form data'}, 403)
+    return render_template('signin.html', form=loginform)
+
+    
+            
 
 @app.route('/stock')
 def about():
