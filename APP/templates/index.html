@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TradeChat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="line"></div>
+    <div class="text">
+        <p class="hover-effect" id="hover1">Why social media sentiment analysis?</p>
+        <p class="hover-effect" id="hover2">Real-time stock price and Reddit comment</p>
+        <p class="hover-effect" id="hover3">Join the discussion!</p>
+    </div>
+    <div>
+        <h1 id="welcome-message" style="opacity: 0;">Welcome to TradeChat</h1>
+        <h1 class="header">Navigate Market Sentiment: Twitter Trends and Stock Correlations</h1>
+        <div class="icon-row">
+            {% for icon in icons %}
+                <img src="{{ url_for('static', filename='images/company/' ~ icon) }}" alt="{{ icon.split('.')[0] }}" class="company-icon" onclick="showResult('{{ icon.split('.')[0] }}')">
+            {% endfor %}
+        </div>
+    </div>    
+    <a href="{{ url_for('signup') }}" class="user-icon">
+        <img src="{{ url_for('static', filename='images/user.png') }}" alt="SignUp">
+    </a>
+</body>
+<script>
+    var hoverElements = document.querySelectorAll('.hover-effect');
+    hoverElements.forEach(function(element) {
+        element.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.1)';
+        });
+        element.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+    function showResult(companyName) {
+        var imagePath = '{{ url_for("static", filename="images/results/") }}' + companyName + '_result.png';
+        document.getElementById('result-img').src = imagePath;
+        document.getElementById('result-img').alt = companyName + " Result";
+    }
+
+    window.onload = function() {
+        document.getElementById('welcome-message').style.opacity = 1;
+    };
+</script>
+</html>
