@@ -20,7 +20,7 @@ csrf = CSRFProtect(app)
 
 @app.route('/')
 def index():
-    icons = ['TSLA.png', 'aapl.png', 'amzn.png', 'goog.png', 'meta.png', 'msft.png', 'nvda.png']
+    icons = ['TSLA.png', 'AAPL.png', 'AMZN.png', 'GOOG.png', 'META.png', 'MSFT.png', 'NVDA.png']
     return render_template('index.html', icons = icons)
 
 

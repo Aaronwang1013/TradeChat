@@ -2,6 +2,7 @@ from airflow import DAG
 from datetime import timedelta, datetime
 from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import PythonOperator
+from airflow.utils.dates import days_ago
 
 import pendulum
 ## reddit crawler
@@ -23,6 +24,7 @@ def get_reddit_post():
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False, 
+    "start_date": days_ago(1),
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 1,
@@ -35,8 +37,7 @@ with DAG(
     "reddit_sentiment_dag",
     default_args=default_args,
     schedule="0 0 * * *",
-    catchup=False,
-    start_date = datetime.today() 
+    catchup=False
 ) as dag:
     task_start = EmptyOperator(
         task_id="task_start",
