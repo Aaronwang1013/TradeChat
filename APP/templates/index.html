@@ -52,11 +52,11 @@
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken  // Include the CSRF token in the request headers
+                'X-CSRFToken': csrfToken  
             },
             body: JSON.stringify({ company: companyName }),
         })
-        .then(response => response.json()) // Parse response as JSON
+        .then(response => response.json()) 
         .then(data => {
             // Render Plotly chart using the received data
             Plotly.newPlot('plotly-chart', data);

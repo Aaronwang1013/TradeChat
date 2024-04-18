@@ -78,7 +78,6 @@ def signin():
 
             # find user in the database
             email = collection.find_one({"email": email})
-            print(email)
             if email and check_password_hash(email['password'], password):
                 flash('Login Successful. You will now be redirected to the homepage.', 'success')
                 return render_template('signin_success.html')
