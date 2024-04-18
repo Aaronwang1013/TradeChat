@@ -8,6 +8,8 @@ services:
       - "2181:2181"
       - "2888:2888"
       - "3888:3888"
+    networks:
+      - custom_network
 
   kafka:
     image: debezium/kafka:latest
@@ -18,15 +20,39 @@ services:
       - ZOOKEEPER_CONNECT=zookeeper:2181
     depends_on:
       - zookeeper
+    networks:
+      - custom_network
   
-  python:
-    image: python:3.8.19-bullseye
-    container_name: python_kafka
+  producer:
+    build: ./FinnhubProducer 
+    container_name: python_kafka_producer
     ports:
       - 8001:80
-    command: sh -c 'pip install kafka && pip install kafka-python && tail -f /dev/null'
+    command: sh -c 'pip install kafka-python && tail -f /dev/null'
     volumes:
-      - /Users/aaronwang/Desktop/AppWorks/PersonalProject/TradeChat:/app
+      - ./FinnhubProducer:/app
+    networks:
+      - custom_network
+
+  spark:
+    build: ./FinnhubConsumer
+    container_name: spark
+    environment:
+      - SPARK_MASTER_URL=spark://spark:7077
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - SPARK_MODE=master
+    ports:
+      - '8081:8080'
+    volumes:
+      - ./FinnhubConsumer:/app
+    networks:
+      - custom_network
+    command: sh -c 'pip install kafka-python && tail -f /dev/null'
+    depends_on:
+      - kafka
 
   kafdrop:
     container_name: kafdrop
@@ -35,21 +61,8 @@ services:
     image: obsidiandynamics/kafdrop
     ports: 
      - 9000:9000
-  
-  spark:
-    image: bitnami/spark:latest
-    environment:
-      - SPARK_MASTER_URL=spark://spark:7077
-      - SPARK_RPC_AUTHENTICATION_ENABLED=no
-      - SPARK_RPC_ENCRYPTION_ENABLED=no
-      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
-      - SPARK_SSL_ENABLED=no
-    ports:
-      - "8080:8080"
     networks:
-      - custom_network  # Same network as Kafka
-    depends_on:
-      - kafka
+      - custom_network
 
 
   grafana:
