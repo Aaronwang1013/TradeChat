@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TradeChat</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
     <div class="line"></div>
@@ -24,7 +26,7 @@
     </div>    
 
     <div id="result-container">
-        <img id="result-img" src="" alt="" class="result-img">
+        <div id="plotly-chart"></div>
     </div>
 
     <a href="{{ url_for('signup') }}" class="user-icon">
@@ -42,10 +44,26 @@
         });
     });
     function showResult(companyName) {
-        var imagePath = 'https://tradechat.s3.ap-southeast-1.amazonaws.com/sentiment_analysis/' + companyName + '_sentiment_overtime.png';
-        document.getElementById('result-img').src = imagePath;
-        document.getElementById('result-img').alt = companyName + " Result";
-        document.getElementById('result-container').style.display = 'block'; 
+        console.log(companyName);
+        // Get the CSRF token from the HTML meta tag
+        var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+        // Send the company symbol to the backend along with the CSRF token
+        fetch('/twitter_sentiment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken  // Include the CSRF token in the request headers
+            },
+            body: JSON.stringify({ company: companyName }),
+        })
+        .then(response => response.json()) // Parse response as JSON
+        .then(data => {
+            // Render Plotly chart using the received data
+            Plotly.newPlot('plotly-chart', data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        }); 
     }
 
     window.onload = function() {

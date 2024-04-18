@@ -10,9 +10,11 @@ from flask_bcrypt import generate_password_hash
 import forms
 from pymongo import MongoClient
 # make plot
-import pandas as pd
+import plotly
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
+import pandas as pd
+import json
 
 
 app = Flask(__name__)
@@ -120,44 +122,44 @@ def sentiment_overtime(tweet_df, stock_df, title, score_column_name="score", sav
         yaxis_title=score_column_name,
         yaxis2_title="Stock Price",
     )
-
-    return fig
-
-
-def draw_stock_price_with_sentiment(tweet_df, stock_df, start_day, end_day, score_name="score"):
-    ticker_symbols =  tweet_df["ticker_symbol"].unique()
-    company = pd.read_csv('./dataset/Company.csv')
-    for ticker_symbol in ticker_symbols:
-        print(f"Ticker symbol: {ticker_symbol}")
-
-        sub_company = company[company["ticker_symbol"] == ticker_symbol]["company_name"]
-        if len(sub_company) != 1:
-            continue
-
-        company_name = sub_company.iloc[0]
-
-        print(f"Stock price of {company_name} company with ticker symbol is {ticker_symbol}")
-
-        sub_tweet_df = tweet_df[tweet_df["ticker_symbol"] == ticker_symbol]
-        sub_tweet_df = sub_tweet_df[(sub_tweet_df["day_date"]>=pd.to_datetime(start_day)) & (sub_tweet_df["day_date"]<=pd.to_datetime(end_day))]
-
-        sub_stock_df = stock_df[stock_df["ticker_symbol"] == ticker_symbol]
-        sub_stock_df = sub_stock_df[(sub_stock_df["day_date"]>=pd.to_datetime(start_day)) & (sub_stock_df["day_date"]<=pd.to_datetime(end_day))]
-        save_path = f"./images/{ticker_symbol}_sentiment_overtime.png"
-        fig = sentiment_overtime(sub_tweet_df, sub_stock_df, company_name, score_column_name=score_name, save_path = save_path)
+    fig.update_xaxes(type='date')
+    fig_json = json.dumps(fig, cls= plotly.utils.PlotlyJSONEncoder)
+    return fig_json
 
 
+def draw_stock_price_with_sentiment(tweet_df, stock_df, start_day, end_day, company_name, score_name="score"):
+    company = company_name
+    sub_tweet_df = tweet_df[tweet_df["ticker_symbol"] == company]
+    sub_tweet_df = sub_tweet_df[(sub_tweet_df["day_date"]>=start_day) & (sub_tweet_df["day_date"]<=end_day)]
+    sub_stock_df = stock_df[stock_df["ticker_symbol"] == company]
+    sub_stock_df = sub_stock_df[(sub_stock_df["day_date"]>=start_day) & (sub_stock_df["day_date"]<=end_day)]
+    fig_json = sentiment_overtime(sub_tweet_df, sub_stock_df, company_name)
+    return fig_json
 
-
-@app.route('/twitter_sentiment', mehotds=['GET', 'POST'])
-def twitter_sentiment():
-    tweet_df, stock_df = read_twitter_data()
-    start_day = min(tweet_df['day_date'])
-    end_day = max(tweet_df['day_date'])
-    fig = draw_stock_price_with_sentiment(tweet_df, stock_df, start_day, end_day)
-    return render_template('twitter_sentiment_form.html', fig=fig)
     
-            
+
+
+
+@app.route('/twitter_sentiment', methods=['GET', 'POST'])
+def twitter_sentiment():
+    if request.method == 'POST':
+        print("Received POST request")
+        data = request.json
+        company_name = data.get('company')
+        company_name = request.json['company']
+        tweet_df, stock_df = read_twitter_data()
+        # tweet_df['day_date'] = pd.to_datetime(tweet_df['day_date'])
+        start_day = min(tweet_df['day_date'])
+        end_day = max(tweet_df['day_date'])
+        print('start:' , start_day)
+        print('end:' , end_day)
+        fig_json = draw_stock_price_with_sentiment(tweet_df, stock_df, start_day, end_day, company_name)
+        return fig_json
+    else:
+        print("Company name not found in request JSON")
+        return jsonify({"error": "Company name not found in request JSON"}), 400
+
+
 
 @app.route('/stock')
 def about():
