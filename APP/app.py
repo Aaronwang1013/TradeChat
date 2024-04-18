@@ -159,6 +159,18 @@ def twitter_sentiment():
         return jsonify({"error": "Company name not found in request JSON"}), 400
 
 
+@app.route('/discussion')
+def discussion():
+    icons = ['TSLA.png', 'AAPL.png', 'AMZN.png', 'GOOG.png', 'META.png', 'MSFT.png', 'NVDA.png']
+    return render_template('discussion.html', icons=icons)
+
+
+@app.route('/post_comment', methods=['POST'])
+def post_comment():
+    if request.method == 'POST':
+        comment = request.form['comment']
+        return 
+
 
 @app.route('/stock')
 def about():
