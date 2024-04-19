@@ -1,3 +1,7 @@
+* {
+    text-decoration: none;
+    color: black; 
+}
 body {
     background-color: #888382; 
     margin: 0; 
@@ -23,11 +27,20 @@ body {
     right: 20px;      
     width: 50px;      
     height: 50px;     
-    z-index: 1000;    
+    z-index: 1000;  
+    text-decoration: none;
+    color: black;  
 }
 .user-icon img {
     width: 100%;      
     height: auto;     
+}
+
+.user-icon p {
+    white-space: nowrap;
+    box-sizing: border-box;
+    margin: 0; 
+    padding: 0; 
 }
 .header{
 margin-top: 80px;

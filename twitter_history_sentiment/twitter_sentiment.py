@@ -73,36 +73,6 @@ def getVanderSentiment(score):
     return score
 
 
-# def sentiment_overtime(tweet_df, stock_df, title, score_column_name="score", save_path=None):
-#     print("\n\n")
-#     fig = plt.figure(figsize=(24,10))
-#     ax1 = fig.add_subplot()
-#     ax2 = ax1.twinx()
-    
-#     # Customize colors
-#     tweet_color = 'blue'
-#     stock_color = 'orange'
-    
-#     ax1.vlines(tweet_df['day_date'], 0, tweet_df[score_column_name], color=tweet_color) 
-#     ax1.axhline(y=0, color='r', linestyle='-')
-
-    
-#     ax2.plot(stock_df['day_date'], stock_df['close_value'], color=stock_color, label='Stock price')
-#     ax2.set_title("Effects of " + title +" tweets to stock price")
-#     lines, labels = ax1.get_legend_handles_labels()
-#     lines2, labels2 = ax2.get_legend_handles_labels()
-    
-#     ax1.set_xlabel('Day date')
-#     ax1.set_ylabel(score_column_name, color=tweet_color)
-#     ax2.set_ylabel('Stock Price', color=stock_color)
-    
-#     ax2.legend(lines + lines2, labels + labels2, loc=0)
-    
-#     if save_path:
-#         plt.savefig(save_path)
-#     else:
-#         plt.show()
-
 
 def sentiment_overtime(tweet_df, stock_df, title, score_column_name="score", save_path=None):
     fig = make_subplots(specs=[[{"secondary_y": True}]])

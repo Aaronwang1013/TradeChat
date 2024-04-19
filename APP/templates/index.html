@@ -11,10 +11,11 @@
 <body>
     <div class="line"></div>
     <div class="text">
-        <p class="hover-effect" id="hover1">Why social media sentiment analysis?</p>
-        <p class="hover-effect" id="hover2">Real-time stock price and Reddit comment</p>
+        <p class="hover-effect" id="hover1"><a href="{{ url_for('index') }}">Why social media sentiment analysis?</a></p>
+        <p class="hover-effect" id="hover2"><a href="{{ url_for('index') }}">Real-time stock price and Reddit comment</a></p>
         <p class="hover-effect" id="hover3"><a href="{{ url_for('discussion') }}">Join the discussion!</a></p>
     </div>
+    {% block content %}
     <div>
         <h1 id="welcome-message" style="opacity: 0;">Welcome to TradeChat</h1>
         <h1 class="header">Navigate Market Sentiment: Twitter Trends and Stock Correlations</h1>
@@ -28,10 +29,14 @@
     <div id="result-container">
         <div id="plotly-chart"></div>
     </div>
-
-    <a href="{{ url_for('signup') }}" class="user-icon">
-        <img src="{{ url_for('static', filename='images/user.png') }}" alt="SignUp">
-    </a>
+    {% endblock %}
+    <a href="{{ url_for('profile') }}" class="user-icon">
+        <img src="{{ url_for('static', filename='images/user.png') }}" alt="Profile">
+        {% if username %}
+            <p>Hi, {{ username }}!</p>
+        {% endif %}
+    </a>    
+    
 </body>
 <script>
     var hoverElements = document.querySelectorAll('.hover-effect');
