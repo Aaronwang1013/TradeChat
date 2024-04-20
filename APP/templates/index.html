@@ -27,15 +27,16 @@
     </div>    
 
     <div id="result-container">
+        <div id="loading-message">Please wait a moment...</div>
         <div id="plotly-chart"></div>
     </div>
-    {% endblock %}
     <a href="{{ url_for('profile') }}" class="user-icon">
         <img src="{{ url_for('static', filename='images/user.png') }}" alt="Profile">
         {% if username %}
             <p>Hi, {{ username }}!</p>
         {% endif %}
-    </a>    
+    </a>   
+    {% endblock %} 
     
 </body>
 <script>
@@ -50,9 +51,8 @@
     });
     function showResult(companyName) {
         console.log(companyName);
-        // Get the CSRF token from the HTML meta tag
         var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-        // Send the company symbol to the backend along with the CSRF token
+        document.getElementById('loading-message').style.display = 'block';
         fetch('/twitter_sentiment', {
             method: 'POST',
             headers: {
@@ -65,9 +65,11 @@
         .then(data => {
             // Render Plotly chart using the received data
             Plotly.newPlot('plotly-chart', data);
+            document.getElementById('loading-message').style.display = 'none';
         })
         .catch(error => {
             console.error('Error:', error);
+            document.getElementById('loading-message').style.display = 'none';
         }); 
     }
 

@@ -1,8 +1,6 @@
 ## use historical twitter dataset to show the sentiment of the tweets
 
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 import re
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import plotly.graph_objects as go
