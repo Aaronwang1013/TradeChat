@@ -72,7 +72,14 @@ if __name__ == "__main__":
     decoded_df = avro_decode(raw_df, trades_schema)
     final_df = parse_df(decoded_df)
         
-    print("final_df", final_df)
+    query = final_df \
+        .writeStream \
+        .outputMode("append") \
+        .format("console") \
+        .start()
+    
+
+    query.awaitTermination()
     dsw = (
         final_df.writeStream
             .format("mongodb")\

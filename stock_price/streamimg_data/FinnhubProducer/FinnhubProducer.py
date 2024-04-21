@@ -2,10 +2,7 @@ import json
 import websocket
 from src.utils.functions import *
 from src.utils.functions import avro_encode
-import time
 from config import Config
-import pytz
-from datetime import datetime, time
 import time as ti
 
 
@@ -18,7 +15,8 @@ class FinnhubProducer:
         self.finnhub_client = load_client(Config.FINN_API_KEY)
         self.producer = load_producer(f"{Config.KAFKA_SERVER}:{Config.KAFKA_PORT}")
         self.avro_schema = load_avro_schema('src/schema/trades.avsc')
-        self.tickers = ["BINANCE:BTCUSDT", "TSLA"]
+        # self.tickers = ["BINANCE:BTCUSDT", "TSLA", "NVDA", "AAPL", "AMZN", "GOOGL", "MSFT", "META"]
+        self.tickers = ["BINANCE:BTCUSDT", "BINANCE:ETHUSDT"]
         ## get real-time stock data from finnhub
         websocket.enableTrace(True)
         self.ws = websocket.WebSocketApp(f"wss://ws.finnhub.io?token={Config.FINN_API_KEY}",
