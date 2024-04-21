@@ -8,4 +8,5 @@ class Config:
     KAFKA_SERVER: str = os.getenv("KAFKA_SERVER")
     KAFKA_PORT: str = os.getenv("KAFKA_PORT")
     KAFKA_TOPIC: str = os.getenv("KAFKA_TOPIC")
+    MONGODB_USER: str = os.getenv("MONGODB_USER")
     MONGODB_PASSWORD: str = os.getenv("MONGODB_PASSWORD")

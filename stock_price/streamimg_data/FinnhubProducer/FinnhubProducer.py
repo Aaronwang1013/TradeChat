@@ -11,14 +11,6 @@ import time as ti
 
 
 
-def is_market_open():
-    ny_time = datetime.now(pytz.timezone('America/New_York'))
-    start_time = time(9, 30, 0)
-    end_time = time(16, 0, 0)
-    # if market is open
-    return True
-    # return ny_time.weekday() < 5 and start_time <= ny_time.time() <= end_time
-
 
 class FinnhubProducer:
 
@@ -26,8 +18,7 @@ class FinnhubProducer:
         self.finnhub_client = load_client(Config.FINN_API_KEY)
         self.producer = load_producer(f"{Config.KAFKA_SERVER}:{Config.KAFKA_PORT}")
         self.avro_schema = load_avro_schema('src/schema/trades.avsc')
-        # self.tickers = ["TSLA", "NVDA"]
-        self.tickers = ["BINANCE:BTCUSDT", "BINANCE:ETHUSDT"]
+        self.tickers = ["BINANCE:BTCUSDT", "TSLA"]
         ## get real-time stock data from finnhub
         websocket.enableTrace(True)
         self.ws = websocket.WebSocketApp(f"wss://ws.finnhub.io?token={Config.FINN_API_KEY}",
@@ -60,18 +51,12 @@ class FinnhubProducer:
         print("### closed ###")
 
     def on_open(self, ws):
-        if is_market_open():
+        try:
             for ticker in self.tickers:
                 self.ws.send(f'{{"type": "subscribe", "symbol":"{ticker}"}}')
-        else:
-            print("Market is closed")
-            self.ws.close()
+        except Exception as e:
+            print(e)
 
 
 if __name__ == "__main__":
-    # FinnhubProducer()
-    while True:
-        if is_market_open():
-            FinnhubProducer()
-        else:
-            ti.sleep(60*10)
+   FinnhubProducer()

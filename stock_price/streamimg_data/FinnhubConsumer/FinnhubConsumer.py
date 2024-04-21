@@ -2,6 +2,8 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import explode
 from pyspark.sql.avro.functions import from_avro
 from pyspark.sql.functions import col, current_timestamp, concat_ws, expr
+from config import Config
+from pyspark.sql.types import StructType, DoubleType, StringType, StructField
 
 import logging
 
@@ -28,7 +30,6 @@ def avro_decode(raw_df, schema):
         logger.error(f"Error in avro_decode: {e}, raw_df: {raw_df}")
 
 
-
 def parse_df(decoded_df):
     try:
         parsed_df = (
@@ -53,23 +54,34 @@ def parse_df(decoded_df):
         logger.error(f"Error in parse_df: {e}, decoded_df: {decoded_df}")
 
 
-
-spark = (
-        SparkSession.builder.appName("finnhub_consumer").master("local[*]").getOrCreate()
+if __name__ == "__main__":
+    spark = (
+        SparkSession.\
+        builder.appName("finnhub_consumer").\
+        master("local[*]").getOrCreate()
     )
-raw_df = (spark.readStream.format("kafka")
-          .option("kafka.bootstrap.servers", "kafka:9092")
-          .option("subscribe", "market")
-          .option("startingOffsets", "latest").load()
-        )
 
-decoded_df = avro_decode(raw_df, trades_schema)
-final_df = parse_df(decoded_df)
-query = final_df \
-    .writeStream \
-    .outputMode("append") \
-    .format("console") \
-    .start()
+    raw_df = spark \
+        .readStream \
+        .format("kafka") \
+        .option("startingOffsets", "earliest") \
+        .option("kafka.bootstrap.servers", "kafka:9092") \
+        .option("subscribe", "market") \
+        .load()
+    
+    decoded_df = avro_decode(raw_df, trades_schema)
+    final_df = parse_df(decoded_df)
+        
+    print("final_df", final_df)
+    dsw = (
+        final_df.writeStream
+            .format("mongodb")\
+            .option("checkpointLocation", "/tmp/pyspark7/")\
+            .option('spark.mongodb.connection.uri', f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0")\
+            .option('spark.mongodb.database', 'TradeChat')\
+            .option('spark.mongodb.collection', 'stock_realtime_price')\
+            .outputMode("append")\
+            .start()
+    )
 
-
-query.awaitTermination()
+    dsw.awaitTermination()  
