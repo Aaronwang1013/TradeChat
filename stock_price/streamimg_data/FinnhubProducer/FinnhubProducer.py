@@ -2,17 +2,22 @@ import json
 import websocket
 from src.utils.functions import *
 from src.utils.functions import avro_encode
+import time
 from config import Config
+import pytz
+from datetime import datetime, time
 import time as ti
-import logging
 
 
-## set up logger
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
-)
-logger = logging.getLogger(__name__)
 
+
+def is_market_open():
+    ny_time = datetime.now(pytz.timezone('America/New_York'))
+    start_time = time(9, 30, 0)
+    end_time = time(16, 0, 0)
+    # if market is open
+    return True
+    # return ny_time.weekday() < 5 and start_time <= ny_time.time() <= end_time
 
 
 class FinnhubProducer:
@@ -21,7 +26,7 @@ class FinnhubProducer:
         self.finnhub_client = load_client(Config.FINN_API_KEY)
         self.producer = load_producer(f"{Config.KAFKA_SERVER}:{Config.KAFKA_PORT}")
         self.avro_schema = load_avro_schema('src/schema/trades.avsc')
-        # self.tickers = ["BINANCE:BTCUSDT", "TSLA", "NVDA", "AAPL", "AMZN", "GOOGL", "MSFT", "META"]
+        # self.tickers = ["TSLA", "NVDA"]
         self.tickers = ["BINANCE:BTCUSDT", "BINANCE:ETHUSDT"]
         ## get real-time stock data from finnhub
         websocket.enableTrace(True)
@@ -42,42 +47,31 @@ class FinnhubProducer:
                 },
                 self.avro_schema
             )
+            print("avro:" , avro_message)
             self.producer.produce(Config.KAFKA_TOPIC, avro_message)
             ti.sleep(5)
-            logger.info(f"Message sent to kafka: {message}")
         except Exception as e:
-            logger.error(f"Failed to send message to kafka: {e}, message: {message}")
+            print(e)
 
     def on_error(self, ws, error):
-        max_retry = 5
-        retry = 0
-        if retry < max_retry:
-            retry += 1
-            self.ws.close()
-            logger.warning(
-                f"Retrying to connect to websocket, retry: {retry} out of {max_retry}"
-            )
-            ti.sleep(15)
-            self.ws.run_forever()
-        else:
-            logger.error(f"Exceeded max retry, exiting...")
-            self.ws.close()
-
+        print(error)
 
     def on_close(self, ws):
-        logger.info("### websocket is closing... ###")
-        self.producer.flush(timeout=5)
-        logger.info("### closed ###")
-
+        print("### closed ###")
 
     def on_open(self, ws):
-        try:
+        if is_market_open():
             for ticker in self.tickers:
                 self.ws.send(f'{{"type": "subscribe", "symbol":"{ticker}"}}')
-                logger.info(f"Subscribed to {ticker} successfully!")
-        except Exception as e:
-            logger.error(f"Subscribing to {ticker} failed: {e}")
+        else:
+            print("Market is closed")
+            self.ws.close()
 
 
 if __name__ == "__main__":
-   FinnhubProducer()
+    # FinnhubProducer()
+    while True:
+        if is_market_open():
+            FinnhubProducer()
+        else:
+            ti.sleep(60*10)

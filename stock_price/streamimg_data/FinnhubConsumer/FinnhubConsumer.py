@@ -3,6 +3,7 @@ from pyspark.sql.functions import explode
 from pyspark.sql.avro.functions import from_avro
 from pyspark.sql.functions import col, current_timestamp, concat_ws, expr
 from config import Config
+from pyspark.sql.functions import first
 from pyspark.sql.types import StructType, DoubleType, StringType, StructField
 
 import logging
@@ -71,7 +72,7 @@ if __name__ == "__main__":
     
     decoded_df = avro_decode(raw_df, trades_schema)
     final_df = parse_df(decoded_df)
-        
+
     query = final_df \
         .writeStream \
         .outputMode("append") \
