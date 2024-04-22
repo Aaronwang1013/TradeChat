@@ -30,10 +30,10 @@ def token_required(func):
             return func(*args, **kwargs)
         except jwt.ExpiredSignatureError:
             flash('Access token expired. Please sign in again.', 'warning')
-            return redirect(url_for('signin'))
+            return redirect(url_for('index'))
         except jwt.InvalidTokenError:
             flash('Invalid token. Please sign in again.', 'warnging')
-            return redirect(url_for('signin'))
+            return redirect(url_for('index'))
     return decorated_function
 
 
