@@ -26,8 +26,8 @@ class FinnhubProducer:
         self.finnhub_client = load_client(Config.FINN_API_KEY)
         self.producer = load_producer(f"{Config.KAFKA_SERVER}:{Config.KAFKA_PORT}")
         self.avro_schema = load_avro_schema('src/schema/trades.avsc')
-        # self.tickers = ["TSLA", "NVDA"]
-        self.tickers = ["BINANCE:BTCUSDT", "BINANCE:ETHUSDT"]
+        self.tickers = ["BINANCE:BTCUSDT", "TSLA", "NVDA", "AMZN", "AAPL", "GOOGL", "MSFT", "META"]
+        # self.tickers = ["BINANCE:BTCUSDT", "BINANCE:ETHUSDT"]
         ## get real-time stock data from finnhub
         websocket.enableTrace(True)
         self.ws = websocket.WebSocketApp(f"wss://ws.finnhub.io?token={Config.FINN_API_KEY}",
@@ -42,12 +42,11 @@ class FinnhubProducer:
         try:
             avro_message = avro_encode(
                 {
-                    'data': message['data'],
+                    'data': [message['data'][0]],
                     'type': message['type']
                 },
                 self.avro_schema
             )
-            print("avro:" , avro_message)
             self.producer.produce(Config.KAFKA_TOPIC, avro_message)
             ti.sleep(5)
         except Exception as e:
@@ -62,7 +61,8 @@ class FinnhubProducer:
     def on_open(self, ws):
         if is_market_open():
             for ticker in self.tickers:
-                self.ws.send(f'{{"type": "subscribe", "symbol":"{ticker}"}}')
+                # self.ws.send(f'{{"type": "subscribe", "symbol":"{ticker}"}}')
+                self.ws.send(json.dumps({"type": "subscribe", "symbol": ticker}))
         else:
             print("Market is closed")
             self.ws.close()

@@ -4,3 +4,4 @@ confluent_kafka
 requests
 urllib3
 py4j
+python-dotenv
