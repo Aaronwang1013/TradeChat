@@ -4,8 +4,14 @@ from src.utils.functions import *
 from src.utils.functions import avro_encode
 from config import Config
 import time as ti
+import logging
 
 
+## set up logger
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 
 
@@ -36,24 +42,41 @@ class FinnhubProducer:
                 },
                 self.avro_schema
             )
-            print("avro:" , avro_message)
             self.producer.produce(Config.KAFKA_TOPIC, avro_message)
             ti.sleep(5)
+            logger.info(f"Message sent to kafka: {message}")
         except Exception as e:
-            print(e)
+            logger.error(f"Failed to send message to kafka: {e}, message: {message}")
 
     def on_error(self, ws, error):
-        print(error)
+        max_retry = 5
+        retry = 0
+        if retry < max_retry:
+            retry += 1
+            self.ws.close()
+            logger.warning(
+                f"Retrying to connect to websocket, retry: {retry} out of {max_retry}"
+            )
+            ti.sleep(15)
+            self.ws.run_forever()
+        else:
+            logger.error(f"Exceeded max retry, exiting...")
+            self.ws.close()
+
 
     def on_close(self, ws):
-        print("### closed ###")
+        logger.info("### websocket is closing... ###")
+        self.producer.flush(timeout=5)
+        logger.info("### closed ###")
+
 
     def on_open(self, ws):
         try:
             for ticker in self.tickers:
                 self.ws.send(f'{{"type": "subscribe", "symbol":"{ticker}"}}')
+                logger.info(f"Subscribed to {ticker} successfully!")
         except Exception as e:
-            print(e)
+            logger.error(f"Subscribing to {ticker} failed: {e}")
 
 
 if __name__ == "__main__":

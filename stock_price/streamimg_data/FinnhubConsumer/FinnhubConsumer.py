@@ -80,15 +80,15 @@ if __name__ == "__main__":
     
 
     query.awaitTermination()
-    dsw = (
-        final_df.writeStream
-            .format("mongodb")\
-            .option("checkpointLocation", "/tmp/pyspark7/")\
-            .option('spark.mongodb.connection.uri', f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0")\
-            .option('spark.mongodb.database', 'TradeChat')\
-            .option('spark.mongodb.collection', 'stock_realtime_price')\
-            .outputMode("append")\
-            .start()
-    )
+    # dsw = (
+    #     final_df.writeStream
+    #         .format("mongodb")\
+    #         .option("checkpointLocation", "/tmp/pyspark7/")\
+    #         .option('spark.mongodb.connection.uri', f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0")\
+    #         .option('spark.mongodb.database', 'TradeChat')\
+    #         .option('spark.mongodb.collection', 'stock_realtime_price')\
+    #         .outputMode("append")\
+    #         .start()
+    # )
 
-    dsw.awaitTermination()  
+    # dsw.awaitTermination()  
