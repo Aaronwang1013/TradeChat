@@ -1,0 +1,11 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div id="plot">
+
+</div>
+<script>
+    var plotData = {{ plot | safe }};
+    Plotly.newPlot('plot', plotData.data, plotData.layout || {});
+</script>
+{% endblock %}

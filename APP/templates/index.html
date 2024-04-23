@@ -15,17 +15,17 @@
         <p class="hover-effect" id="hover2"><a href="{{ url_for('index') }}">Real-time stock price and Reddit comment</a></p>
         <p class="hover-effect" id="hover3"><a href="{{ url_for('discussion') }}">Join the discussion!</a></p>
     </div>
-    {% block content %}
     <div>
         <h1 id="welcome-message" style="opacity: 0;">Welcome to TradeChat</h1>
-        <h1 class="header">Navigate Market Sentiment: Twitter Trends and Stock Correlations</h1>
+        
         <div class="icon-row">
             {% for icon in icons %}
                 <img src="{{ url_for('static', filename='images/company/' ~ icon) }}" alt="{{ icon.split('.')[0] }}" class="company-icon" onclick="showResult('{{ icon.split('.')[0] }}')">
             {% endfor %}
         </div>
-    </div>    
-
+    </div>       
+    {% block content %}
+    <h1 class="header">Navigate Market Sentiment: Twitter Trends and Stock Correlations</h1> 
     <div id="result-container">
         <div id="loading-message">Please wait a moment...</div>
         <div id="plotly-chart"></div>

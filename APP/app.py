@@ -12,6 +12,7 @@ import forms
 from functools import wraps
 from pymongo import MongoClient
 # make plot
+
 from api_util import *
 # from functools import wraps
 import jwt 
@@ -185,7 +186,7 @@ def discussion():
     client = MongoClient(DATABASE_URL)
     collection = client['TradeChat']['comment']
     comments = collection.find({})
-    return render_template('discussion.html', comments=comments)
+    return render_template('discussion.html', comments=comments , icons = icons)
 
 
 @app.route('/post_comment', methods=['POST'])
@@ -222,8 +223,15 @@ def post_comment():
 
 
 @app.route('/stock')
-def about():
-    return render_template('stock.html')
+def stock():
+    timestamps, prices = get_realtime_data()
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=timestamps, y=prices, mode='lines', name='Stock Price'))
+    fig.update_layout(title='Realtime Stock Price', 
+                      xaxis_title='Timestamp', 
+                      yaxis_title='Price')
+    fig_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+    return render_template('stock.html',icons = icons, plot = fig_json)
 
 @app.route('/chat')
 def chat():

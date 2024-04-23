@@ -60,3 +60,21 @@ def draw_stock_price_with_sentiment(tweet_df, stock_df, start_day, end_day, comp
     sub_stock_df = sub_stock_df[(sub_stock_df["day_date"]>=start_day) & (sub_stock_df["day_date"]<=end_day)]
     fig_json = sentiment_overtime(sub_tweet_df, sub_stock_df, company_name)
     return fig_json
+
+
+def get_realtime_data():
+    #connect to mongodb
+    DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0"
+    client = MongoClient(DATABASE_URL)
+    collection = client['TradeChat']['stock_realtime_price']
+    latest_data = collection.find().sort([('_id', -1)]).limit(100)
+    timestamps = []
+    prices = []
+    for record in latest_data:
+        timestamps.append(record['timestamp'])
+        prices.append(record['price'])
+    return timestamps, prices
+
+
+if __name__ == '__main__':
+    print(get_realtime_data())
