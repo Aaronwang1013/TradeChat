@@ -124,4 +124,3 @@ def insert_to_mongo(data):
     except Exception as e:
         logging.error("Failed to insert data to MongoDB: %s", e)
 
-

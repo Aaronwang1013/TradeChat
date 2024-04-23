@@ -1,24 +1,19 @@
 from airflow import DAG
-from datetime import timedelta
+from datetime import timedelta, datetime
 from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import PythonOperator
+import historical_stock_price
 from airflow.utils.dates import days_ago
 
-import pendulum
-## reddit crawler
-import reddit_crawler
 
 
-ticker = ['AAPL', 'TSLA', 'AAPL', 'NVDA_Stock', 'MSFT', 'amzn',
-        'meta', 'google', 'stock', 'investing', 'StockMarket', 
-        'wallstreetbets']
-
-def get_reddit_post():
-    for i in ticker:
-        posts = reddit_crawler.get_subreddit_posts(i)
-        data = reddit_crawler.parse_comment(posts)
-        reddit_crawler.insert_to_mongo(data)
-
+def get_stock_price():
+    today = datetime.now().date()
+    monday = today - timedelta(days=today.weekday())
+    start_date = monday.strftime('%Y-%m-%d')
+    end_date = (monday + timedelta(days=6)).strftime('%Y-%m-%d')
+    tickers = ['AAPL', 'TSLA', 'NVDA', 'MSFT', 'AMZN', 'META', 'GOOG']
+    historical_stock_price.extract_ticker(tickers, start_date, end_date)
 
 
 default_args = {
@@ -31,12 +26,12 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
-local_tz = pendulum.timezone("Asia/Taipei")
+
 
 with DAG(
     "reddit_sentiment_dag",
     default_args=default_args,
-    schedule="0 0 * * *",
+    schedule="0 0 * * 0",
     catchup=False
 ) as dag:
     task_start = EmptyOperator(
@@ -49,11 +44,11 @@ with DAG(
         dag=dag
     )
 
-    reddit_sentiment = PythonOperator(
-        task_id="reddit_sentiment",
-        python_callable=get_reddit_post,
+    historical_stock_price_dag = PythonOperator(
+        task_id="historical_stock_price",
+        python_callable=get_stock_price,
         dag=dag
     )
 
 
-    (task_start >> reddit_sentiment >> task_end)
+    (task_start >> historical_stock_price_dag >> task_end)
