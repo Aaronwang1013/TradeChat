@@ -1,5 +1,5 @@
 from airflow import DAG
-from datetime import timedelta, datetime
+from datetime import timedelta
 from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import PythonOperator
 from airflow.utils.dates import days_ago
