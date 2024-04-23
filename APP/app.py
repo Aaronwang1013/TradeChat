@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session
+from flask import Flask, render_template, request
 from flask import flash
 from flask import jsonify
 from flask import make_response
@@ -22,6 +22,7 @@ app = Flask(__name__)
 app.secret_key = Config.SECRET_KEY
 csrf = CSRFProtect(app)
 
+icons = ['TSLA.png', 'AAPL.png', 'AMZN.png', 'GOOG.png', 'META.png', 'MSFT.png', 'NVDA.png']
 
 def token_required(func):
     @wraps(func)
@@ -30,10 +31,10 @@ def token_required(func):
             return func(*args, **kwargs)
         except jwt.ExpiredSignatureError:
             flash('Access token expired. Please sign in again.', 'warning')
-            return redirect(url_for('index'))
+            return redirect(url_for('signup'))
         except jwt.InvalidTokenError:
             flash('Invalid token. Please sign in again.', 'warnging')
-            return redirect(url_for('index'))
+            return redirect(url_for('signup'))
     return decorated_function
 
 
@@ -52,9 +53,13 @@ def generate_access_token(username, email):
     
 
 @app.route('/')
+def index(): 
+    return render_template('index.html', icons = icons)
+
+
+@app.route('/home')
 @token_required
-def index():
-    icons = ['TSLA.png', 'AAPL.png', 'AMZN.png', 'GOOG.png', 'META.png', 'MSFT.png', 'NVDA.png']
+def home():
     access_token = request.cookies.get('access_token')
     if access_token:
         access_token = access_token.split(' ')[1]
@@ -125,7 +130,7 @@ def signin():
                     flash('Login Successful. You will now be redirected to the homepage.', 'success')
                     username = user_data.get('username')
                     access_token = generate_access_token(username, email)
-                    response = make_response(redirect(url_for('index')))
+                    response = make_response(redirect(url_for('home')))
                     response.set_cookie('access_token',  f'Bearer {access_token}')
                     return response
             else:
