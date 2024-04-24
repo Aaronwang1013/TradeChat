@@ -40,99 +40,32 @@ class FinnhubProducer:
     def on_message(self, ws, message):
         message = json.loads(message)
         for i in message['data']:
-            if i['s'] == 'BINANCE:BTCUSDT':                
-                try:
-                    avro_message = avro_encode(
-                        {
-                            'data': [i]
-                        },
-                        self.avro_schema
-                    )
-                    self.producer.produce('BTC', avro_message)
-                except Exception as e:
-                    print(e)
-
-            if i['s'] == 'TSLA':                
-                try:
-                    avro_message = avro_encode(
-                        {
-                            'data': [i]
-                        },
-                        self.avro_schema
-                    )
-                    self.producer.produce('TSLA', avro_message)
-                except Exception as e:
-                    print(e)
-            elif i['s'] == 'NVDA':
-                try:
-                    avro_message = avro_encode(
-                        {
-                            'data': [i]
-                        },
-                        self.avro_schema
-                    )
-                    self.producer.produce('NVDA', avro_message)
-                except Exception as e:
-                    print(e)
-            elif i['s'] == 'AMZN':
-                try:
-                    avro_message = avro_encode(
-                        {
-                            'data': [i]
-                        },
-                        self.avro_schema
-                    )
-                    self.producer.produce('AMZN', avro_message)
-                except Exception as e:
-                    print(e)
-
-            elif i['s'] == 'GOOGL':
-                try:
-                    avro_message = avro_encode(
-                        {
-                            'data': [i]
-                        },
-                        self.avro_schema
-                    )
-                    self.producer.produce('GOOG', avro_message)
-                except Exception as e:
-                    print(e)
-            elif i['s'] == 'MSFT':
-                try:
-                    avro_message = avro_encode(
-                        {
-                            'data': [i]
-                        },
-                        self.avro_schema
-                    )
-                    self.producer.produce('MSFT', avro_message)
-                except Exception as e:
-                    print(e)
-                
-            elif i['s'] == 'AAPL':
-                try:
-                    avro_message = avro_encode(
-                        {
-                            'data': [i]
-                        },
-                        self.avro_schema
-                    )
-                    self.producer.produce('AAPL', avro_message)
-                except Exception as e:
-                    print(e)
-                
-            elif i['s'] == 'META':
-                try:
-                    avro_message = avro_encode(
-                        {
-                            'data': [i]
-                        },
-                        self.avro_schema
-                    )
-                    self.producer.produce('META', avro_message)
-                except Exception as e:
-                    print(e)
-        ti.sleep(5)
+            ticker = i['s']
+            if ticker == 'BINANCE:BTCUSDT':
+                topic = 'BTC'
+            elif ticker == 'TSLA':
+                topic = 'TSLA'
+            elif ticker == 'NVDA':
+                topic = 'NVDA'
+            elif ticker == 'AMZN':
+                topic = 'AMZN'
+            elif ticker == 'GOOGL':
+                topic = 'GOOG'
+            elif ticker == 'MSFT':
+                topic = 'MSFT'
+            elif ticker == 'AAPL':
+                topic = 'AAPL'
+            elif ticker == 'META':
+                topic = 'META'
+            else:
+                continue 
+            try:
+                avro_message = avro_encode({'data': [i]}, self.avro_schema)
+                self.producer.produce(topic, avro_message)
+                ti.sleep(2)
+            
+            except Exception as e:
+                print(e)
                 
 
     def on_error(self, ws, error):
