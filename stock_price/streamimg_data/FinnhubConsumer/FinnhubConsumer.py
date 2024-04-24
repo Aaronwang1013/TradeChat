@@ -65,13 +65,12 @@ if __name__ == "__main__":
         builder.appName("finnhub_consumer").\
         master("local[*]").getOrCreate()
     )
-
     raw_df = spark \
         .readStream \
         .format("kafka") \
         .option("startingOffsets", "latest") \
         .option("kafka.bootstrap.servers", "kafka:9092") \
-        .option("subscribe", "market") \
+        .option("subscribe", "TSLA,NVDA,AMZN,GOOG,AAPL,BTC,MSFT,META") \
         .load()
     
     decoded_df = avro_decode(raw_df, trades_schema)

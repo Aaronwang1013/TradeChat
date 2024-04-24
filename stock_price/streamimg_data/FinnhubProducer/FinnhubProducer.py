@@ -39,18 +39,101 @@ class FinnhubProducer:
 
     def on_message(self, ws, message):
         message = json.loads(message)
-        try:
-            avro_message = avro_encode(
-                {
-                    'data': [message['data'][0]],
-                    'type': message['type']
-                },
-                self.avro_schema
-            )
-            self.producer.produce(Config.KAFKA_TOPIC, avro_message)
-            ti.sleep(5)
-        except Exception as e:
-            print(e)
+        for i in message['data']:
+            if i['s'] == 'BINANCE:BTCUSDT':                
+                try:
+                    avro_message = avro_encode(
+                        {
+                            'data': [i]
+                        },
+                        self.avro_schema
+                    )
+                    self.producer.produce('BTC', avro_message)
+                except Exception as e:
+                    print(e)
+
+            if i['s'] == 'TSLA':                
+                try:
+                    avro_message = avro_encode(
+                        {
+                            'data': [i]
+                        },
+                        self.avro_schema
+                    )
+                    self.producer.produce('TSLA', avro_message)
+                except Exception as e:
+                    print(e)
+            elif i['s'] == 'NVDA':
+                try:
+                    avro_message = avro_encode(
+                        {
+                            'data': [i]
+                        },
+                        self.avro_schema
+                    )
+                    self.producer.produce('NVDA', avro_message)
+                except Exception as e:
+                    print(e)
+            elif i['s'] == 'AMZN':
+                try:
+                    avro_message = avro_encode(
+                        {
+                            'data': [i]
+                        },
+                        self.avro_schema
+                    )
+                    self.producer.produce('AMZN', avro_message)
+                except Exception as e:
+                    print(e)
+
+            elif i['s'] == 'GOOGL':
+                try:
+                    avro_message = avro_encode(
+                        {
+                            'data': [i]
+                        },
+                        self.avro_schema
+                    )
+                    self.producer.produce('GOOG', avro_message)
+                except Exception as e:
+                    print(e)
+            elif i['s'] == 'MSFT':
+                try:
+                    avro_message = avro_encode(
+                        {
+                            'data': [i]
+                        },
+                        self.avro_schema
+                    )
+                    self.producer.produce('MSFT', avro_message)
+                except Exception as e:
+                    print(e)
+                
+            elif i['s'] == 'AAPL':
+                try:
+                    avro_message = avro_encode(
+                        {
+                            'data': [i]
+                        },
+                        self.avro_schema
+                    )
+                    self.producer.produce('AAPL', avro_message)
+                except Exception as e:
+                    print(e)
+                
+            elif i['s'] == 'META':
+                try:
+                    avro_message = avro_encode(
+                        {
+                            'data': [i]
+                        },
+                        self.avro_schema
+                    )
+                    self.producer.produce('META', avro_message)
+                except Exception as e:
+                    print(e)
+        ti.sleep(5)
+                
 
     def on_error(self, ws, error):
         print(error)
@@ -69,7 +152,6 @@ class FinnhubProducer:
 
 
 if __name__ == "__main__":
-    # FinnhubProducer()
     while True:
         if is_market_open():
             FinnhubProducer()
