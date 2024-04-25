@@ -1,11 +1,95 @@
 {% extends "index.html" %}
 
 {% block content %}
-<div id="plot">
+<div style="display: flex; justify-content: space-around; align-items: flex-start;">
+    <div id="plot" style="width:600px; height:400px;"></div>
 
+    <div style="display: flex; flex-direction: column; align-items: center;">
+        <h1>Reddit Sentiment Analysis</h1>
+        <select id="chartType" onchange="updateChartVisibility()">
+            <option value="line">Line Chart</option>
+            <option value="pie">Pie Chart</option>
+        </select>
+        <div id="line_chart" style="width:600px; height:400px;"></div>
+        <div id="pie_chart" style="width:600px; height:400px; display: none;"></div>
+    </div>
 </div>
+
 <script>
     var plotData = {{ plot | safe }};
     Plotly.newPlot('plot', plotData.data, plotData.layout || {});
+
+    fetch('/sentiment')
+    .then(response => response.json())
+    .then(data => {
+        const dates = Object.keys(data.scores);
+        const scores = Object.values(data.scores);
+        const sentiments = data.sentiment_counts;
+
+        var trace1 = {
+            x: dates,
+            y: scores,
+            type: 'scatter',
+            mode: 'lines+markers',
+            marker: {
+                color: 'blue'
+            }
+        };
+        var layout1 = {
+            title: 'Daily Sentiment Score',
+            xaxis: {
+                title: 'Date'
+            },
+            yaxis: {
+                title: 'Average Score',
+                range: [-1, 1]
+            },
+            shapes: [
+                {
+                    type: 'line',
+                    xref: 'paper',
+                    x0: 0,
+                    y0: -1,
+                    x1: 1,
+                    y1: -1,
+                    line: {
+                        color: 'red',
+                        width: 2,
+                        dash: 'dash'
+                    }
+                },
+                {
+                    type: 'line',
+                    xref: 'paper',
+                    x0: 0,
+                    y0: 1,
+                    x1: 1,
+                    y1: 1,
+                    line: {
+                        color: 'green',
+                        width: 2,
+                        dash: 'dash'
+                    }
+                }
+            ]
+        };
+        Plotly.newPlot('line_chart', [trace1], layout1);
+
+        var trace2 = {
+            labels: Object.keys(sentiments),
+            values: Object.values(sentiments),
+            type: 'pie'
+        };
+        var layout2 = {
+            title: 'Sentiment Distribution',
+        };
+        Plotly.newPlot('pie_chart', [trace2], layout2);
+    });
+
+    function updateChartVisibility() {
+        var selectedChart = document.getElementById('chartType').value;
+        document.getElementById('line_chart').style.display = selectedChart === 'line' ? 'block' : 'none';
+        document.getElementById('pie_chart').style.display = selectedChart === 'pie' ? 'block' : 'none';
+    }
 </script>
 {% endblock %}

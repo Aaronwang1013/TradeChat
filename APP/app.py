@@ -231,12 +231,14 @@ def stock():
                       xaxis_title='Timestamp', 
                       yaxis_title='Price')
     fig_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-    return render_template('stock.html',icons = icons, plot = fig_json)
+    sentiment = get_reddit_sentiment()
+    return render_template('stock.html',icons = icons, plot = fig_json, sentiment = sentiment)
 
-@app.route('/chat')
-def chat():
-    return render_template('chat.html')
 
+@app.route('/sentiment')
+def sentiment():
+    data = get_reddit_sentiment()
+    return data
 
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@ import plotly
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import pandas as pd
+from datetime import datetime, timedelta
 
 
 def read_twitter_data(company=None):
@@ -76,5 +77,50 @@ def get_realtime_data():
     return timestamps, prices
 
 
+def get_reddit_sentiment():
+    DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0"
+    client = MongoClient(DATABASE_URL)
+    collection = client['TradeChat']['reddit']
+    end_date = datetime.utcnow()
+    start_date = end_date - timedelta(days=5)
+    end_timestamp = int(end_date.timestamp())
+    start_timestamp = int(start_date.timestamp())
+    query = {
+        "created_utc": {"$gte": start_timestamp, "$lte": end_timestamp}
+    }
+    data = list(collection.find(query))
+    sentiment_scores_with_comments = {} 
+    sentiment_counts_with_comments = {'positive': 0, 'negative': 0, 'neutral': 0}
+    sentiment_scores = {} 
+    sentiment_counts = {'positive': 0, 'negative': 0, 'neutral': 0}
+    for item in data:
+        date_str = datetime.utcfromtimestamp(item['created_utc']).strftime('%Y-%m-%d')
+        score = item.get('vader_score')
+        sentiment = item.get('sentiment')
+        comments = item.get('comments')
+        # print("comment:", comment)
+        if date_str not in sentiment_scores:
+            sentiment_scores[date_str] = []
+        sentiment_scores[date_str].append(score)
+        for comment in comments:
+            comment_score = comment['vader_score']
+            comment_date = datetime.utcfromtimestamp(comment['created_utc']).strftime('%Y-%m-%d')
+            comment_sentiment = comment['sentiment']
+            if comment_date in sentiment_scores:
+                sentiment_scores[comment_date].append(comment_score)
+                sentiment_counts[comment_sentiment] += 1
+        
+        sentiment_counts[sentiment] += 1
+    average_scores = {date: sum(scores) / len(scores) for date, scores in sentiment_scores.items()}
+    
+    result = {
+        'scores': average_scores,
+        'sentiment_counts': sentiment_counts
+    }
+    return json.dumps(result, indent=4)
+
+
+
 if __name__ == '__main__':
-    print(get_realtime_data())
+    # print(get_realtime_data())
+    print(get_reddit_sentiment())
