@@ -46,6 +46,9 @@ def get_subreddit_posts(subreddit_name):
     except Exception as e:
         logging.error("Failed to get subreddit posts: %s", e)
 
+
+
+
 def parse_comment(posts):
     # run the script at a new day to get the data of the previous day
     current_date = datetime.utcnow() - timedelta(days=1)
@@ -184,6 +187,22 @@ def insert_to_mongo(data):
         DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
         client = MongoClient(DATABASE_URL)
         collection = client['TradeChat']['reddit']
+        data = json.loads(data)
+        if data:
+            collection.insert_many(data)
+        client.close()
+        logging.info(f"{len(data)} data inserted to MongoDB at: {inserted_at}.")
+    except Exception as e:
+        logging.error("Failed to insert data to MongoDB: %s", e)
+
+
+
+def insert_to_mongo_by_company(data, company):
+    try:
+        inserted_at = datetime.utcnow().isoformat(timespec="seconds")
+        DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+        client = MongoClient(DATABASE_URL)
+        collection = client['TradeChat'][company]
         data = json.loads(data)
         if data:
             collection.insert_many(data)
