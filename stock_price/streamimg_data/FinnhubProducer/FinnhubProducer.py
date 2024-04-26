@@ -62,7 +62,6 @@ class FinnhubProducer:
             try:
                 avro_message = avro_encode({'data': [i]}, self.avro_schema)
                 self.producer.produce(topic, avro_message)
-                ti.sleep(2)
             
             except Exception as e:
                 print(e)

@@ -1,95 +1,212 @@
 {% extends "index.html" %}
 
 {% block content %}
+<style>
+    select {
+        width: 200px;
+        height: 40px; 
+        font-size: 16px; 
+        margin-bottom: 20px; 
+    }
+    .chart-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 600px; 
+    }
+    .chart-container label {
+        margin-bottom: 5px;
+        font-weight: bold; 
+    }
+    #chartContainer {
+        width: 1000px; 
+        height: 500px; 
+        margin-top: 50px;
+        margin-bottom: 20px;
+    }
+    .header-title {
+        text-align: center;
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+</style>
 <div style="display: flex; justify-content: space-around; align-items: flex-start;">
-    <div id="plot" style="width:600px; height:400px;"></div>
-
+    <div>
+        <h1 class="header-title">Stock Price - <span id="companyNameDisplay"></span></h1>
+        <div id="chartContainer"></div>
+    </div>
     <div style="display: flex; flex-direction: column; align-items: center;">
         <h1>Reddit Sentiment Analysis</h1>
+        <label for="companyList">Select a company:</label>
+        <select id="companyList" onchange="updateDataBasedOnCompany()">
+            <option value="Overall">Overall</option>
+            <option value="AAPL">Apple</option>
+            <option value="GOOGL">Google</option>
+            <option value="MSFT">Microsoft</option>
+            <option value="TSLA">Tesla</option>
+            <option value="NVDA">Nvidia</option>
+            <option value="AMZN">Amzon</option>
+            <option value="META">Meta</option> 
+        </select>
+        <label for="chartType">Select an image type:</label>
         <select id="chartType" onchange="updateChartVisibility()">
-            <option value="line">Line Chart</option>
-            <option value="pie">Pie Chart</option>
+            <option value="line">Series Plot</option>
+            <option value="pie">Donut Plot</option>
+            <option value="bar">Bar Plot</option>
         </select>
         <div id="line_chart" style="width:600px; height:400px;"></div>
         <div id="pie_chart" style="width:600px; height:400px; display: none;"></div>
+        <div id="emotion_bar_chart" style="width:600px; height:400px; display: none;"></div>
     </div>
 </div>
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+<script type="text/javascript">
+    let currentWidget = null; 
 
-<script>
-    var plotData = {{ plot | safe }};
-    Plotly.newPlot('plot', plotData.data, plotData.layout || {});
+    function createWidget(symbol) {
+        if (currentWidget !== null) {
+            currentWidget.remove();
+        }
+        currentWidget = new TradingView.widget({
+            "container_id": "chartContainer",
+            "width": 1000,
+            "height": 500,
+            "symbol": symbol,
+            "interval": "D",
+            "timezone": "Etc/UTC",
+            "theme": "light",
+            "style": "2",
+            "locale": "en",
+            "toolbar_bg": "#f1f3f6",
+            "enable_publishing": false,
+            "withdateranges": false, 
+            "allow_symbol_change": false,
+            "show_popup_button": false,
+            "details": false, 
+            "hide_side_toolbar": false,
+            "hide_top_toolbar": true,
+            "hide_legend": true
+        });
+    }
 
-    fetch('/sentiment')
-    .then(response => response.json())
-    .then(data => {
+    function fetchData(company) {
+        return fetch(`/sentiment?company=${company}`)
+            .then(response => response.json())
+            .then(data => updateCharts(data))
+            .catch(error => console.error('Error fetching data:', error));
+    }
+
+    function updateDataBasedOnCompany() {
+        var selectedCompany = document.getElementById('companyList').value;
+        var symbolMap = {
+            'Overall': 'NASDAQ:NDX',
+            'AAPL': 'NASDAQ:AAPL',
+            'GOOGL': 'NASDAQ:GOOGL',
+            'MSFT': 'NASDAQ:MSFT',
+            'TSLA': 'NASDAQ:TSLA',
+            'NVDA': 'NASDAQ:NVDA',
+            'AMZN': 'NASDAQ:AMZN',
+            'META': 'NASDAQ:META'
+        };
+        var symbol = symbolMap[selectedCompany] || 'NASDAQ:TSLA';
+        var companyNames = {
+            'Overall': 'overall',
+            'AAPL': 'Apple Inc.',
+            'GOOGL': 'Alphabet (Google)',
+            'MSFT': 'Microsoft',
+            'TSLA': 'Tesla',
+            'NVDA': 'Nvidia',
+            'AMZN': 'Amazon',
+            'META': 'Meta Platforms'
+        };
+        var companyName = companyNames[selectedCompany] || 'Tesla'; 
+        document.getElementById('companyNameDisplay').textContent = companyName; 
+        createWidget(symbol); 
+        fetchData(selectedCompany);
+    }
+
+    function updateCharts(data) {
         const dates = Object.keys(data.scores);
         const scores = Object.values(data.scores);
         const sentiments = data.sentiment_counts;
+        const sentimentData = data.sentiment_counts_by_date;
+        const bardates = Object.keys(sentimentData);
+        const positiveCounts = bardates.map(date => sentimentData[date]['positive']);
+        const negativeCounts = bardates.map(date => sentimentData[date]['negative']);
+        const neutralCounts = bardates.map(date => sentimentData[date]['neutral']);
 
+        // Scatter Plot
         var trace1 = {
             x: dates,
             y: scores,
             type: 'scatter',
             mode: 'lines+markers',
-            marker: {
-                color: 'blue'
-            }
+            marker: { color: 'blue' }
         };
         var layout1 = {
             title: 'Daily Sentiment Score',
-            xaxis: {
-                title: 'Date'
-            },
-            yaxis: {
-                title: 'Average Score',
-                range: [-1, 1]
-            },
-            shapes: [
-                {
-                    type: 'line',
-                    xref: 'paper',
-                    x0: 0,
-                    y0: -1,
-                    x1: 1,
-                    y1: -1,
-                    line: {
-                        color: 'red',
-                        width: 2,
-                        dash: 'dash'
-                    }
-                },
-                {
-                    type: 'line',
-                    xref: 'paper',
-                    x0: 0,
-                    y0: 1,
-                    x1: 1,
-                    y1: 1,
-                    line: {
-                        color: 'green',
-                        width: 2,
-                        dash: 'dash'
-                    }
-                }
-            ]
+            xaxis: { title: 'Date' },
+            yaxis: { title: 'Average Score', range: [-1, 1] }
         };
         Plotly.newPlot('line_chart', [trace1], layout1);
 
+        // Pie Chart
         var trace2 = {
             labels: Object.keys(sentiments),
             values: Object.values(sentiments),
-            type: 'pie'
+            type: 'pie',
+            hole: 0.4,
+            marker: { colors: ['green', 'red', 'grey'] }
         };
-        var layout2 = {
-            title: 'Sentiment Distribution',
-        };
+        var layout2 = { title: 'Sentiment Distribution' };
         Plotly.newPlot('pie_chart', [trace2], layout2);
-    });
+
+        // Bar Chart
+        var tracePositive = {
+            x: bardates,
+            y: positiveCounts,
+            name: 'Positive',
+            type: 'bar',
+            marker: { color: 'green' }
+        };
+
+        var traceNegative = {
+            x: bardates,
+            y: negativeCounts,
+            name: 'Negative',
+            type: 'bar',
+            marker: { color: 'red' }
+        };
+
+        var traceNeutral = {
+            x: bardates,
+            y: neutralCounts,
+            name: 'Neutral',
+            type: 'bar',
+            marker: { color: 'grey' }
+        };
+
+        var layoutBar = {
+            barmode: 'group',  
+            title: 'Daily Emotion Counts',
+            xaxis: { title: 'Date', tickangle: -45 },
+            yaxis: { title: 'Counts' }
+        };
+
+        var dataBar = [tracePositive, traceNegative, traceNeutral];
+        Plotly.newPlot('emotion_bar_chart', dataBar, layoutBar);
+    }
 
     function updateChartVisibility() {
         var selectedChart = document.getElementById('chartType').value;
         document.getElementById('line_chart').style.display = selectedChart === 'line' ? 'block' : 'none';
         document.getElementById('pie_chart').style.display = selectedChart === 'pie' ? 'block' : 'none';
+        document.getElementById('emotion_bar_chart').style.display = selectedChart === 'bar' ? 'block' : 'none';
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        updateDataBasedOnCompany();
+    });
 </script>
+
 {% endblock %}

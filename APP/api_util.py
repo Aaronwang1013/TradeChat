@@ -7,7 +7,9 @@ from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import pandas as pd
 from datetime import datetime, timedelta
-
+import logging
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+vanderSentimentAnalyzer = SentimentIntensityAnalyzer()
 
 def read_twitter_data(company=None):
     DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0"
@@ -74,6 +76,7 @@ def get_realtime_data():
     for record in latest_data:
         timestamps.append(record['timestamp'])
         prices.append(record['price'])
+    client.close()
     return timestamps, prices
 
 
@@ -93,32 +96,110 @@ def get_reddit_sentiment():
     sentiment_counts_with_comments = {'positive': 0, 'negative': 0, 'neutral': 0}
     sentiment_scores = {} 
     sentiment_counts = {'positive': 0, 'negative': 0, 'neutral': 0}
+    sentiment_counts_by_date = {}
     for item in data:
         date_str = datetime.utcfromtimestamp(item['created_utc']).strftime('%Y-%m-%d')
         score = item.get('vader_score')
         sentiment = item.get('sentiment')
         comments = item.get('comments')
-        # print("comment:", comment)
         if date_str not in sentiment_scores:
             sentiment_scores[date_str] = []
+            sentiment_scores_with_comments[date_str] = []
+            sentiment_counts_by_date[date_str] = {'positive': 0, 'negative': 0, 'neutral': 0}
+        sentiment_counts_by_date[date_str][sentiment] += 1
         sentiment_scores[date_str].append(score)
+        sentiment_scores_with_comments[date_str].append(score)
+        sentiment_counts[sentiment] += 1
+        sentiment_counts_with_comments[sentiment] += 1
+        for comment in comments:
+            comment_score = comment['vader_score']
+            comment_date = datetime.utcfromtimestamp(comment['created_utc']).strftime('%Y-%m-%d')
+            comment_sentiment = comment['sentiment']
+            if comment_date in sentiment_scores:
+                sentiment_scores_with_comments[comment_date].append(comment_score)
+                sentiment_counts_with_comments[comment_sentiment] += 1
+                sentiment_counts_by_date[comment_date][comment_sentiment] += 1
+    average_scores = {date: sum(scores) / len(scores) for date, scores in sentiment_scores.items()}
+    average_scores_with_comments = {date: sum(scores) / len(scores) for date, scores in sentiment_scores_with_comments.items()}
+    client.close()
+    result = {
+        'scores': average_scores,
+        'sentiment_counts': sentiment_counts,
+        'scores_with_comments': average_scores_with_comments,
+        'sentiment_counts_with_comments': sentiment_counts_with_comments,
+        'sentiment_counts_by_date': sentiment_counts_by_date
+    }
+    return json.dumps(result, indent=4)
+
+
+def get_sentiment_by_company(company):
+    DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0"
+    company_reddit_collection = f"{company}_reddit"
+    client = MongoClient(DATABASE_URL)
+    collection = client['TradeChat'][company_reddit_collection]
+    end_date = datetime.utcnow()
+    start_date = end_date - timedelta(days=5)
+    end_timestamp = int(end_date.timestamp())
+    start_timestamp = int(start_date.timestamp())
+    query = {
+        "created_utc": {"$gte": start_timestamp, "$lte": end_timestamp}
+    }
+    data = list(collection.find(query))
+    sentiment_scores = {} 
+    sentiment_counts = {'positive': 0, 'negative': 0, 'neutral': 0}
+    sentiment_counts_by_date = {}
+    for item in data:
+        date_str = datetime.utcfromtimestamp(item['created_utc']).strftime('%Y-%m-%d')
+        score = item.get('vader_score')
+        sentiment = item.get('sentiment')
+        comments = item.get('comments')
+        if date_str not in sentiment_scores:
+            sentiment_scores[date_str] = []
+            sentiment_counts_by_date[date_str] = {'positive': 0, 'negative': 0, 'neutral': 0}
+        sentiment_counts_by_date[date_str][sentiment] += 1
+        sentiment_scores[date_str].append(score)
+        sentiment_counts[sentiment] += 1
         for comment in comments:
             comment_score = comment['vader_score']
             comment_date = datetime.utcfromtimestamp(comment['created_utc']).strftime('%Y-%m-%d')
             comment_sentiment = comment['sentiment']
             if comment_date in sentiment_scores:
                 sentiment_scores[comment_date].append(comment_score)
-                sentiment_counts[comment_sentiment] += 1
-        
-        sentiment_counts[sentiment] += 1
+                sentiment_counts_by_date[comment_date][comment_sentiment] += 1
+                sentiment_counts[sentiment] += 1
     average_scores = {date: sum(scores) / len(scores) for date, scores in sentiment_scores.items()}
-    
+    client.close()
     result = {
         'scores': average_scores,
-        'sentiment_counts': sentiment_counts
+        'sentiment_counts': sentiment_counts,
+        'sentiment_counts_by_date': sentiment_counts_by_date
     }
     return json.dumps(result, indent=4)
 
+
+
+def getVaderScore(text):
+    try:
+        vs = vanderSentimentAnalyzer.polarity_scores(text)
+        score = vs['compound']
+        return score
+    except Exception as e:
+        logging.error("Failed to compute Vader score: %s", e)
+    try:
+        vs = vanderSentimentAnalyzer.polarity_scores(text)
+        score = vs['compound']
+        return score
+    except Exception as e:
+        logging.error("Failed to compute Vader score: %s", e)
+
+
+def getVaderSentiment(score):
+    if (score >= 0.05):
+        return "positive"
+    elif (score > -0.05 and score < 0.05):
+        return "neutral"
+    elif (score <= -0.05):
+        return "negative"
 
 
 if __name__ == '__main__':

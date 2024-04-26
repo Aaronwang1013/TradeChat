@@ -26,7 +26,7 @@ def get_reddit_by_company():
     for i in tickers:
         posts = reddit_crawler.get_subreddit_posts(i)
         data = reddit_crawler.parse_comment(posts)
-        reddit_crawler.insert_to_mongo_by_company(data)
+        reddit_crawler.insert_to_mongo_by_company(data, i)
 
 
 

@@ -209,7 +209,9 @@ def post_comment():
             "username": username,
             "comment": comment,
             "company": company,
-            "timestamp": timestamp
+            "timestamp": timestamp,
+            "vader_score": getVaderScore(comment),
+            "sentiment": getVaderSentiment(comment)
         }
         result = collection.insert_one(comment_data)
         if result.inserted_id:
@@ -231,13 +233,30 @@ def stock():
                       xaxis_title='Timestamp', 
                       yaxis_title='Price')
     fig_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-    sentiment = get_reddit_sentiment()
-    return render_template('stock.html',icons = icons, plot = fig_json, sentiment = sentiment)
+    return render_template('stock.html',icons = icons, plot = fig_json)
 
 
 @app.route('/sentiment')
 def sentiment():
-    data = get_reddit_sentiment()
+    company = request.args.get("company")
+    print(company)
+    if company == 'Overall':  
+        data = get_reddit_sentiment()
+    elif company == 'AAPL':
+        data = get_sentiment_by_company(company)
+    elif company == 'AMZN':
+        data = get_sentiment_by_company(company)
+    elif company == 'GOOGL':
+        data = get_sentiment_by_company(company)
+    elif company == 'MSFT':
+        data = get_sentiment_by_company(company)
+    elif company == 'NVDA':
+        data = get_sentiment_by_company(company)
+    elif company == 'TSLA':
+        data = get_sentiment_by_company(company)
+    elif company == 'META':
+        data = get_sentiment_by_company(company)
+    print(data)
     return data
 
 
