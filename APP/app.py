@@ -186,8 +186,10 @@ def discussion():
     DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
     client = MongoClient(DATABASE_URL)
     collection = client['TradeChat']['comment']
-    comments = collection.find({})
-    return render_template('discussion.html', comments=comments)
+    comments = collection.find().sort('_id', -1).skip((page-1)*per_page).limit(per_page)
+    total_comments = collection.count_documents({})
+    total_pages = total_comments // per_page + (1 if total_comments % per_page > 0 else 0)
+    return render_template('discussion.html', comments=comments, page=page, total_comments=total_comments, total_pages=total_pages)
 
 
 @app.route('/post_comment', methods=['POST'])
