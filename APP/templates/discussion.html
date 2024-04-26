@@ -1,13 +1,28 @@
 {% extends "index.html" %}
 
 {% block content %}
+    <style>
+    .comment-content,
+    .comment-content .comment-header,
+    .comment-username, .comment-timestamp,
+    .comment-content p { 
+        color: #F7C815;
+    }
+    .comment-content {
+        background-color: black;
+        padding: 10px;          
+        margin-top: 5px;      
+    }
+    .comment-header {
+        font-weight: bold;     
+    }
+    </style>
     <div class="discussion-content">
         <h2>Discussion Page</h2>
         <p>Welcome to the discussion page. Please select a company or the overall economy to comment on:</p>
 
-
         <form id="comment-form" action="/post_comment" method="POST">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"> 
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label for="company">Select a company or overall economy:</label>
             <select id="company" name="company">
                 <option value="overall">Overall Economy</option>
@@ -25,17 +40,27 @@
             <button type="submit">Submit</button>
         </form>
 
-
         <div id="comments">
             {% for comment in comments %}
-                <div class="comment">
+                <div class="comment comment-content">
                     <div class="comment-header">
-                        <span class="comment-username">{{ comment.username }}: {{ comment.comment }}</span>
-                        <span class="comment-timestamp">{{ comment.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                        <span class="comment-username">{{ comment.username }}:</span>
+                        
                     </div>
+                    <p>{{ comment.comment }}</p>
+                    <span class="comment-timestamp" data-utc-time="{{ comment.timestamp.isoformat() }}">{{ comment.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</span>
                 </div>
             {% endfor %}
         </div>
+        <div class="pagination">
+            {% if page > 1 %}
+                <a href="{{ url_for('discussion', page=page-1) }}">Previous</a>
+            {% endif %}
+            {% if page * 30 < total_comments %}
+                <a href="{{ url_for('discussion', page=page+1) }}">Next</a>
+            {% endif %}
+        </div>
+
         <a href="{{ url_for('profile') }}" class="user-icon">
             <img src="{{ url_for('static', filename='images/user.png') }}" alt="Profile">
             {% if username %}
@@ -43,4 +68,20 @@
             {% endif %}
         </a>   
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const timestampElements = document.querySelectorAll('.comment-timestamp');
+            timestampElements.forEach(element => {
+                const utcTime = element.getAttribute('data-utc-time');
+                const utcDate = new Date(utcTime);
+                utcDate.setHours(utcDate.getHours() + 8);
+        
+                element.textContent = utcDate.toLocaleString('en-US', {
+                    year: 'numeric', month: '2-digit', day: '2-digit',
+                    hour: '2-digit', minute: '2-digit', second: '2-digit'
+                });
+            });
+        });
+    </script>
 {% endblock %}

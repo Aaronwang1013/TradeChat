@@ -6,7 +6,9 @@ import plotly
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import pandas as pd
-
+import logging
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+vanderSentimentAnalyzer = SentimentIntensityAnalyzer()
 
 def read_twitter_data(company=None):
     DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0"
@@ -60,3 +62,26 @@ def draw_stock_price_with_sentiment(tweet_df, stock_df, start_day, end_day, comp
     sub_stock_df = sub_stock_df[(sub_stock_df["day_date"]>=start_day) & (sub_stock_df["day_date"]<=end_day)]
     fig_json = sentiment_overtime(sub_tweet_df, sub_stock_df, company_name)
     return fig_json
+
+def getVaderScore(text):
+    try:
+        vs = vanderSentimentAnalyzer.polarity_scores(text)
+        score = vs['compound']
+        return score
+    except Exception as e:
+        logging.error("Failed to compute Vader score: %s", e)
+    try:
+        vs = vanderSentimentAnalyzer.polarity_scores(text)
+        score = vs['compound']
+        return score
+    except Exception as e:
+        logging.error("Failed to compute Vader score: %s", e)
+
+
+def getVaderSentiment(score):
+    if (score >= 0.05):
+        return "positive"
+    elif (score > -0.05 and score < 0.05):
+        return "neutral"
+    elif (score <= -0.05):
+        return "negative"
