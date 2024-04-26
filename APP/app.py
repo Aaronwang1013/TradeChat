@@ -255,7 +255,6 @@ def sentiment():
         data = get_sentiment_by_company(company)
     elif company == 'META':
         data = get_sentiment_by_company(company)
-    print(data)
     return data
 
 
