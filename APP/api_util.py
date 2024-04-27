@@ -9,7 +9,15 @@ import pandas as pd
 from datetime import datetime, timedelta
 import logging
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+from flask import jsonify
+#dynamic plot
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
+
 vanderSentimentAnalyzer = SentimentIntensityAnalyzer()
+
+
+
 
 def read_twitter_data(company=None):
     DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0"
@@ -202,6 +210,32 @@ def getVaderSentiment(score):
         return "negative"
 
 
+
+def get_comment_company_count():
+    DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0"
+    collection = "comment"
+    client = MongoClient(DATABASE_URL)
+    collection = client['TradeChat'][collection]
+    pipeline = [
+        {"$group": {"_id": "$company", "count": {"$sum": 1}}}
+    ]
+    results = list(collection.aggregate(pipeline))
+    data = {result['_id']: result['count'] for result in results}
+    return jsonify(data)
+
+
+def update(count):
+    plt.cla()
+    comment_counts = get_comment_company_count()
+    comment_counts.plot(kind='bar', color='blue')
+    plt.xlabel('Number of Comments')
+    plt.title('Real-time Comment Counts by Company')
+
+
 if __name__ == '__main__':
     # print(get_realtime_data())
-    print(get_reddit_sentiment())
+    # print(get_reddit_sentiment())
+    # print(get_comment_company_count())
+    fig, ax = plt.subplots()
+    ani = FuncAnimation(fig, update, interval=1000)
+    plt.show()

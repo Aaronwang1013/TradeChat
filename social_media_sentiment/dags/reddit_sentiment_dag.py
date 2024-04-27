@@ -23,10 +23,14 @@ def get_reddit_post():
         reddit_crawler.insert_to_mongo(data)
 
 def get_reddit_by_company():
+    collection = ['AAPL_reddit', 'TSLA_reddit', 'NVDA_reddit', 'MSFT_reddit', 
+                  'AMZN_reddit', 'META_reddit', 'GOOGL_reddit']
     for i in tickers:
+        index = 0
         posts = reddit_crawler.get_subreddit_posts(i)
         data = reddit_crawler.parse_comment(posts)
-        reddit_crawler.insert_to_mongo_by_company(data, i)
+        reddit_crawler.insert_to_mongo_by_company(data, collection[index])
+        index += 1
 
 
 
