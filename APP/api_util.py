@@ -224,18 +224,9 @@ def get_comment_company_count():
     return jsonify(data)
 
 
-def update(count):
-    plt.cla()
-    comment_counts = get_comment_company_count()
-    comment_counts.plot(kind='bar', color='blue')
-    plt.xlabel('Number of Comments')
-    plt.title('Real-time Comment Counts by Company')
 
 
 if __name__ == '__main__':
     # print(get_realtime_data())
     # print(get_reddit_sentiment())
-    # print(get_comment_company_count())
-    fig, ax = plt.subplots()
-    ani = FuncAnimation(fig, update, interval=1000)
-    plt.show()
+    print(get_comment_company_count())
