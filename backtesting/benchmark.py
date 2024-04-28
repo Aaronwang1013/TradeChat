@@ -10,6 +10,7 @@ import os
 import warnings
 from config import Config
 from pymongo import MongoClient
+from datetime import datetime
 
 # print all outputs
 from IPython.core.interactiveshell import InteractiveShell
@@ -24,3 +25,24 @@ collection = client['TradeChat']['stock_historical_price']
 
 
 
+start_date = datetime(2015,1,1)
+end_date = datetime(2020,12,31)
+
+
+query = {
+    'date': {'$gte': start_date, '$lte': end_date}
+}
+
+
+documents = collection.find(query)
+count = 0
+for document in documents:
+    count +=1
+    print(document)
+
+
+_start = dt.date(2015,1,2)
+_end = dt.date(2020,4,30)
+ticker = 'MSFT'
+df = yf.download(ticker, start = _start, end = _end)
+print(df)
