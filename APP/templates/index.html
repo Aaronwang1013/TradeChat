@@ -23,13 +23,15 @@
                 <img src="{{ url_for('static', filename='images/company/' ~ icon) }}" alt="{{ icon.split('.')[0] }}" class="company-icon" onclick="showResult('{{ icon.split('.')[0] }}')">
             {% endfor %}
         </div>
-    </div>       
+    </div>
     {% block content %}
     <h1 class="header">Navigate Market Sentiment: Twitter Trends and Stock Correlations</h1> 
     <div id="result-container">
         <div id="loading-message">Please wait a moment...</div>
         <div id="plotly-chart"></div>
     </div>
+    <h1>Fear & Greed Index</h1>
+    <div id="fear-greed-gauge-chart"></div>   
     <a href="{{ url_for('profile') }}" class="user-icon">
         <img src="{{ url_for('static', filename='images/user.png') }}" alt="Profile">
         {% if username %}
@@ -76,5 +78,23 @@
     window.onload = function() {
         document.getElementById('welcome-message').style.opacity = 1;
     };
+    window.onload = function() {
+        document.getElementById('welcome-message').style.opacity = 1;
+        renderFearGreedGauge();
+    };
+    function renderFearGreedGauge() {
+        fetch('/fear_greed_gauge')
+            .then(response => response.json())
+            .then(data => {
+                Plotly.newPlot('fear-greed-gauge-chart', data);
+            })
+            .catch(error => console.error('Error loading the fear and greed index:', error));
+    }
+
+    window.onload = function() {
+        document.getElementById('welcome-message').style.opacity = 1;
+        renderFearGreedGauge(); 
+    };
+
 </script>
 </html>

@@ -12,7 +12,6 @@ import forms
 from functools import wraps
 from pymongo import MongoClient
 # make plot
-
 from api_util import *
 # from functools import wraps
 import jwt 
@@ -258,6 +257,18 @@ def sentiment():
     elif company == 'META':
         data = get_sentiment_by_company(company)
     return data
+
+
+
+@app.route('/fear_greed_gauge')
+def fear_greed_gauge():
+    current_index = 41.94
+    graphJSON = create_fear_greed_gauge(current_index)
+    return graphJSON
+
+
+# dash_app = create_gauge(app)
+
 
 
 if __name__ == "__main__":

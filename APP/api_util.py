@@ -2,6 +2,7 @@ import json
 from pymongo import MongoClient
 from config import Config
 import pandas as pd
+import numpy as np
 import plotly
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
@@ -200,6 +201,64 @@ def getVaderSentiment(score):
         return "neutral"
     elif (score <= -0.05):
         return "negative"
+
+def create_fear_greed_gauge(value):  
+    plot_bgcolor = "#def"
+    quadrant_colors = [plot_bgcolor, "#2bad4e", "#85e043", "#eff229", "#f2a529", "#f25829"] 
+    quadrant_text = ["", "<b>EXTREME GREED</b>", "<b>GREED</b>", "<b>NEUTRAL</b>", "<b>FEAR</b>", "<b>EXTREME FEAR</b>"]
+    current_value = value
+    min_value = 0
+    max_value = 100
+    hand_length = np.sqrt(2) / 4
+    hand_angle = np.pi * (1 - (max(min_value, min(max_value, current_value)) - min_value) / (max_value - min_value))
+    values = [0.5, 0.125, 0.1, 0.05, 0.1, 0.125]
+    fig = go.Figure(
+        data=[
+                go.Pie(
+                    values = values,
+                    rotation=90,
+                    hole=0.6,
+                    marker_colors=quadrant_colors,
+                    text=quadrant_text,
+                    textinfo="text",
+                    hoverinfo="skip",
+                    sort= False
+                ),
+            ],
+            layout=go.Layout(
+                showlegend=False,
+                margin=dict(b=0,t=10,l=10,r=10),
+                width=450,
+                height=450,
+                paper_bgcolor=plot_bgcolor,
+                annotations=[
+                    go.layout.Annotation(
+                        text=f"<b>Fear and Greed Index:</b><br>{current_value}",
+                        x=0.5, xanchor="center", xref="paper",
+                        y=0.25, yanchor="bottom", yref="paper",
+                        showarrow=False,
+                    )
+                ],
+                shapes=[
+                    go.layout.Shape(
+                        type="circle",
+                        x0=0.48, x1=0.52,
+                        y0=0.48, y1=0.52,
+                        fillcolor="#333",
+                        line_color="#333",
+                    ),
+                    go.layout.Shape(
+                        type="line",
+                        x0=0.5, x1=0.5 + hand_length * np.cos(hand_angle),
+                        y0=0.5, y1=0.5 + hand_length * np.sin(hand_angle),
+                        line=dict(color="#333", width=4)
+                    )
+                ]
+            )
+        )
+    fig_json = json.dumps(fig, cls= plotly.utils.PlotlyJSONEncoder)
+    return fig_json
+
 
 
 if __name__ == '__main__':
