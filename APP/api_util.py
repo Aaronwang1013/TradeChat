@@ -11,9 +11,15 @@ from datetime import datetime, timedelta
 import logging
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import fear_and_greed
-
+from flask import jsonify
+#dynamic plot
+import matplotlib.pyplot as plt
+from matplotlib.animation import FuncAnimation
 
 vanderSentimentAnalyzer = SentimentIntensityAnalyzer()
+
+
+
 
 def read_twitter_data(company=None):
     DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0"
@@ -268,6 +274,23 @@ def get_fear_greed_index():
     return data.value
 
 
+
+def get_comment_company_count():
+    DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0"
+    collection = "comment"
+    client = MongoClient(DATABASE_URL)
+    collection = client['TradeChat'][collection]
+    pipeline = [
+        {"$group": {"_id": "$company", "count": {"$sum": 1}}}
+    ]
+    results = list(collection.aggregate(pipeline))
+    data = {result['_id']: result['count'] for result in results}
+    return jsonify(data)
+
+
+
+
 if __name__ == '__main__':
     # print(get_realtime_data())
-    print(get_reddit_sentiment())
+    # print(get_reddit_sentiment())
+    print(get_comment_company_count())

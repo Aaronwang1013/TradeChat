@@ -53,7 +53,7 @@ def post_comment(session, token, comment, company, csrf_token):
     else:
         print(f"Failed to post comment, {response.text}")
 
-def simulate(user_emails, companies):
+def simulate(user_emails, companies, company_weights):
     session = requests.Session()
     csrf_url = 'http://localhost:5000/user/signin'
     csrf_token = get_csrf_token(session, csrf_url)
@@ -62,10 +62,10 @@ def simulate(user_emails, companies):
             user = random.choice(user_emails)
             token = login_and_get_token(session, user['email'], user['password'], csrf_token)
             if token:
-                company = random.choice(companies)
+                company = random.choices(companies, weights=company_weights, k = 8)[0]
                 comment = generate_comment(company)
                 post_comment(session, token, comment, company, csrf_token)
-                time.sleep(5)
+                # time.sleep(1)
     except Exception as e:
         print(f"Error: {e}")
 
@@ -73,6 +73,7 @@ if __name__ == '__main__':
 
     company_list = ["Overall Economy", "NVDA", "GOOG", "AMZN",
                     "TSLA", "MSFT", "META", "AAPL"]
+    company_weights = [1, 10, 3, 4, 9, 5, 2, 2]
     user_list = [
         {'email': 'johnbaldwin@example.com', 'password':'_+8Wa(IcEf'},
         {'email': 'vargasjasmin@example.net', 'password':'GI$K3Ht+Hx'},
@@ -85,13 +86,4 @@ if __name__ == '__main__':
         {'email': 'vyoung@example.org', 'password': 'p+r6Lz3eur'}
     ]
 
-    # user_list = ['johnbaldwin@example.com', 'vargasjasmin@example.net',
-    #             'gomezmichael@example.org','bshepherd@example.com',
-    #             'curtishill@example.com', 'jason18@example.com',
-    #             'alexandria05@example.com','tbarnett@example.com',
-    #             'vyoung@example.org']
-    # password_list = ['_+8Wa(IcEf', 'GI$K3Ht+Hx', 
-    #                 'YP8ODuNCD&','DRR5MZxY$Q', ')6aN@I!lmh', '^i92X#3t!D',
-    #                 'MSd7F)pt)k','*4GwzsH0w1','p+r6Lz3eur']
-
-    simulate(user_list, company_list)
+    simulate(user_list, company_list, company_weights)

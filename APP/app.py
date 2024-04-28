@@ -268,6 +268,10 @@ def fear_greed_gauge():
 
 
 
+@app.route('/api/comment_stats')
+def comment_stats():
+    data = get_comment_company_count()
+    return data
 
 if __name__ == "__main__":
     app.run(debug=True)
