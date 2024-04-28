@@ -10,6 +10,9 @@ import pandas as pd
 from datetime import datetime, timedelta
 import logging
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+import fear_and_greed
+
+
 vanderSentimentAnalyzer = SentimentIntensityAnalyzer()
 
 def read_twitter_data(company=None):
@@ -259,6 +262,10 @@ def create_fear_greed_gauge(value):
     fig_json = json.dumps(fig, cls= plotly.utils.PlotlyJSONEncoder)
     return fig_json
 
+
+def get_fear_greed_index():
+    data = fear_and_greed.get()
+    return data.value
 
 
 if __name__ == '__main__':

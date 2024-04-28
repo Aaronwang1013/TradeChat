@@ -262,12 +262,10 @@ def sentiment():
 
 @app.route('/fear_greed_gauge')
 def fear_greed_gauge():
-    current_index = 41.94
-    graphJSON = create_fear_greed_gauge(current_index)
+    current_index = get_fear_greed_index()
+    graphJSON = create_fear_greed_gauge(round(current_index))
     return graphJSON
 
-
-# dash_app = create_gauge(app)
 
 
 

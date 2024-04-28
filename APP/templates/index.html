@@ -25,13 +25,30 @@
         </div>
     </div>
     {% block content %}
+    <div id="fear-greed-gauge-chart">
+        <div class="fear-greed-container">
+            <div class="fear-greed-text">
+                <h1>Fear & Greed Index</h1>
+                <h2>What is it?</h2>
+                <p>The Fear & Greed Index measures stock market sentiment, indicating whether excessive fear or greed is driving stock prices. Developed by CNN Business, it helps assess if the market is fairly priced.</p>
+                <h2>How is it calculated?</h2>
+                <p>The index combines seven indicators including market momentum, stock price strength, put/call options, and more, to score the market from 0 (maximum fear) to 100 (maximum greed).</p>
+                <h2>How often is it updated?</h2>
+                <p>The index updates daily, recalculating each component as new data comes in.</p>
+                <h2>How to use it?</h2>
+                <p>Investors use it to gauge market mood and check their own emotional biases. It serves as a complement to fundamental analysis, providing insights into whether market emotions align with economic data.</p>
+            </div>
+        </div>
+    </div>  
+    
+    
+    </div> 
     <h1 class="header">Navigate Market Sentiment: Twitter Trends and Stock Correlations</h1> 
     <div id="result-container">
         <div id="loading-message">Please wait a moment...</div>
         <div id="plotly-chart"></div>
     </div>
-    <h1>Fear & Greed Index</h1>
-    <div id="fear-greed-gauge-chart"></div>   
+    <div>
     <a href="{{ url_for('profile') }}" class="user-icon">
         <img src="{{ url_for('static', filename='images/user.png') }}" alt="Profile">
         {% if username %}
@@ -74,14 +91,6 @@
             document.getElementById('loading-message').style.display = 'none';
         }); 
     }
-
-    window.onload = function() {
-        document.getElementById('welcome-message').style.opacity = 1;
-    };
-    window.onload = function() {
-        document.getElementById('welcome-message').style.opacity = 1;
-        renderFearGreedGauge();
-    };
     function renderFearGreedGauge() {
         fetch('/fear_greed_gauge')
             .then(response => response.json())
@@ -90,11 +99,10 @@
             })
             .catch(error => console.error('Error loading the fear and greed index:', error));
     }
-
     window.onload = function() {
         document.getElementById('welcome-message').style.opacity = 1;
         renderFearGreedGauge(); 
+        showResult('MSFT');
     };
-
 </script>
 </html>
