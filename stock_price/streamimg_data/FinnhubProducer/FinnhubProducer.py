@@ -39,18 +39,33 @@ class FinnhubProducer:
 
     def on_message(self, ws, message):
         message = json.loads(message)
-        try:
-            avro_message = avro_encode(
-                {
-                    'data': [message['data'][0]],
-                    'type': message['type']
-                },
-                self.avro_schema
-            )
-            self.producer.produce(Config.KAFKA_TOPIC, avro_message)
-            ti.sleep(5)
-        except Exception as e:
-            print(e)
+        for i in message['data']:
+            ticker = i['s']
+            if ticker == 'BINANCE:BTCUSDT':
+                topic = 'BTC'
+            elif ticker == 'TSLA':
+                topic = 'TSLA'
+            elif ticker == 'NVDA':
+                topic = 'NVDA'
+            elif ticker == 'AMZN':
+                topic = 'AMZN'
+            elif ticker == 'GOOGL':
+                topic = 'GOOG'
+            elif ticker == 'MSFT':
+                topic = 'MSFT'
+            elif ticker == 'AAPL':
+                topic = 'AAPL'
+            elif ticker == 'META':
+                topic = 'META'
+            else:
+                continue 
+            try:
+                avro_message = avro_encode({'data': [i]}, self.avro_schema)
+                self.producer.produce(topic, avro_message)
+            
+            except Exception as e:
+                print(e)
+                
 
     def on_error(self, ws, error):
         print(error)
@@ -69,7 +84,6 @@ class FinnhubProducer:
 
 
 if __name__ == "__main__":
-    # FinnhubProducer()
     while True:
         if is_market_open():
             FinnhubProducer()

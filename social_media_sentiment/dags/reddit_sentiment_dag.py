@@ -9,15 +9,28 @@ import pendulum
 import reddit_crawler
 
 
-ticker = ['AAPL', 'TSLA', 'AAPL', 'NVDA_Stock', 'MSFT', 'amzn',
-        'meta', 'google', 'stock', 'investing', 'StockMarket', 
+
+tickers = ['AAPL', 'TSLA', 'NVDA_Stock', 'MSFT', 'amzn',
+        'meta', 'google']
+
+categories = ['stock', 'investing', 'StockMarket', 
         'wallstreetbets']
 
 def get_reddit_post():
-    for i in ticker:
+    for i in categories:
         posts = reddit_crawler.get_subreddit_posts(i)
         data = reddit_crawler.parse_comment(posts)
         reddit_crawler.insert_to_mongo(data)
+
+def get_reddit_by_company():
+    collection = ['AAPL_reddit', 'TSLA_reddit', 'NVDA_reddit', 'MSFT_reddit', 
+                  'AMZN_reddit', 'META_reddit', 'GOOGL_reddit']
+    for i in tickers:
+        index = 0
+        posts = reddit_crawler.get_subreddit_posts(i)
+        data = reddit_crawler.parse_comment(posts)
+        reddit_crawler.insert_to_mongo_by_company(data, collection[index])
+        index += 1
 
 
 
@@ -54,6 +67,11 @@ with DAG(
         python_callable=get_reddit_post,
         dag=dag
     )
+    reddit_sentiment_by_company = PythonOperator(
+        task_id="reddit_sentiment_by_company",
+        python_callable=get_reddit_by_company,
+        dag=dag
+    )
 
 
-    (task_start >> reddit_sentiment >> task_end)
+    (task_start >> reddit_sentiment >> reddit_sentiment_by_company >> task_end)

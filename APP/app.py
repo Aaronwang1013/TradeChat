@@ -126,7 +126,6 @@ def signin():
                 # find user in the database
                 user_data = collection.find_one({"email": email}, {"_id": 0, "username": 1, "password": 1})
                 if check_password_hash(user_data.get('password'), password):
-                    print("userdata:", user_data)
                     flash('Login Successful. You will now be redirected to the homepage.', 'success')
                     username = user_data.get('username')
                     access_token = generate_access_token(username, email)
@@ -181,11 +180,15 @@ def twitter_sentiment():
 
 @app.route('/discussion')
 def discussion():
+    page = request.args.get('page', 1, type=int)
+    per_page = 30
     DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
     client = MongoClient(DATABASE_URL)
     collection = client['TradeChat']['comment']
-    comments = collection.find({})
-    return render_template('discussion.html', comments=comments)
+    comments = collection.find().sort('_id', -1).skip((page-1)*per_page).limit(per_page)
+    total_comments = collection.count_documents({})
+    total_pages = total_comments // per_page + (1 if total_comments % per_page > 0 else 0)
+    return render_template('discussion.html', comments=comments, page=page, total_comments=total_comments, total_pages=total_pages)
 
 
 @app.route('/post_comment', methods=['POST'])
@@ -222,14 +225,53 @@ def post_comment():
 
 
 @app.route('/stock')
-def about():
-    return render_template('stock.html')
+def stock():
+    timestamps, prices = get_realtime_data()
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=timestamps, y=prices, mode='lines', name='Stock Price'))
+    fig.update_layout(title='Realtime Stock Price', 
+                      xaxis_title='Timestamp', 
+                      yaxis_title='Price')
+    fig_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+    return render_template('stock.html',icons = icons, plot = fig_json)
 
-@app.route('/chat')
-def chat():
-    return render_template('chat.html')
+
+@app.route('/sentiment')
+def sentiment():
+    company = request.args.get("company")
+    print(company)
+    if company == 'Overall':  
+        data = get_reddit_sentiment()
+    elif company == 'AAPL':
+        data = get_sentiment_by_company(company)
+    elif company == 'AMZN':
+        data = get_sentiment_by_company(company)
+    elif company == 'GOOGL':
+        data = get_sentiment_by_company(company)
+    elif company == 'MSFT':
+        data = get_sentiment_by_company(company)
+    elif company == 'NVDA':
+        data = get_sentiment_by_company(company)
+    elif company == 'TSLA':
+        data = get_sentiment_by_company(company)
+    elif company == 'META':
+        data = get_sentiment_by_company(company)
+    return data
 
 
+
+@app.route('/fear_greed_gauge')
+def fear_greed_gauge():
+    current_index = get_fear_greed_index()
+    graphJSON = create_fear_greed_gauge(round(current_index))
+    return graphJSON
+
+
+
+@app.route('/api/comment_stats')
+def comment_stats():
+    data = get_comment_company_count()
+    return data
 
 if __name__ == "__main__":
     app.run(debug=True)

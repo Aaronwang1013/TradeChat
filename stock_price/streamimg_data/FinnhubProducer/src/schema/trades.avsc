@@ -45,11 +45,6 @@
       "doc" : "Trades messages"
     },
     "doc"  : "Contains data inside a message"
-  }, 
-  {
-    "name" : "type",
-    "type" : "string",
-    "doc"  : "Type of message"
-  } ],
+  }],
   "doc" : "A schema for upcoming Finnhub messages"
 }

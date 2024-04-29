@@ -1,13 +1,37 @@
 {% extends "index.html" %}
 
 {% block content %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+    .comment-content,
+    .comment-content .comment-header,
+    .comment-username, .comment-timestamp,
+    .comment-content p { 
+        color: #F7C815;
+    }
+    .comment-content {
+        background-color: black;
+        padding: 10px;          
+        margin-top: 3px;      
+    }
+    .comment-header {
+        font-weight: bold;     
+    }
+    #commentChart {
+        width: 30%; 
+        height: 400px; 
+        margin-left: auto;
+        margin-right: 10%; 
+        margin-top: 1%;
+        /* margin-bottom: auto; */
+    }
+    </style>
     <div class="discussion-content">
         <h2>Discussion Page</h2>
         <p>Welcome to the discussion page. Please select a company or the overall economy to comment on:</p>
 
-
         <form id="comment-form" action="/post_comment" method="POST">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"> 
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label for="company">Select a company or overall economy:</label>
             <select id="company" name="company">
                 <option value="overall">Overall Economy</option>
@@ -24,18 +48,27 @@
             <textarea id="comment" name="comment" rows="4" cols="50" required></textarea><br>
             <button type="submit">Submit</button>
         </form>
-
-
+        <canvas id="commentChart" width="600" height="400"></canvas>
         <div id="comments">
             {% for comment in comments %}
-                <div class="comment">
+                <div class="comment comment-content">
                     <div class="comment-header">
-                        <span class="comment-username">{{ comment.username }}: {{ comment.comment }}</span>
-                        <span class="comment-timestamp">{{ comment.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                        <span class="comment-username">{{ comment.username }}:</span>
                     </div>
+                    <p>{{ comment.comment }}</p>
+                    <span class="comment-timestamp" data-utc-time="{{ comment.timestamp.isoformat() }}">{{ comment.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</span>
                 </div>
             {% endfor %}
         </div>
+        <div class="pagination">
+            {% if page > 1 %}
+                <a href="{{ url_for('discussion', page=page-1) }}">Previous</a>
+            {% endif %}
+            {% if page * 30 < total_comments %}
+                <a href="{{ url_for('discussion', page=page+1) }}">Next</a>
+            {% endif %}
+        </div>
+
         <a href="{{ url_for('profile') }}" class="user-icon">
             <img src="{{ url_for('static', filename='images/user.png') }}" alt="Profile">
             {% if username %}
@@ -43,4 +76,60 @@
             {% endif %}
         </a>   
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const timestampElements = document.querySelectorAll('.comment-timestamp');
+            timestampElements.forEach(element => {
+                const utcTime = element.getAttribute('data-utc-time');
+                const utcDate = new Date(utcTime);
+                utcDate.setHours(utcDate.getHours() + 8);
+        
+                element.textContent = utcDate.toLocaleString('en-US', {
+                    year: 'numeric', month: '2-digit', day: '2-digit',
+                    hour: '2-digit', minute: '2-digit', second: '2-digit'
+                });
+            });
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('commentChart').getContext('2d');
+            const commentChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [],  
+                    datasets: [{
+                        label: 'Number of Comments',
+                        data: [], 
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            function fetchData() {
+                fetch('/api/comment_stats')
+                    .then(response => response.json())
+                    .then(data => {
+                        const sortedKeys = Object.keys(data).sort((a, b) => data[b] - data[a]);
+                        const sortedValues = sortedKeys.map(key => data[key]);
+                        commentChart.data.labels = sortedKeys;
+                        commentChart.data.datasets[0].data = sortedValues;
+                        commentChart.update();
+                    })
+                    .catch(error => console.error('Error fetching data:', error));
+            }
+
+            fetchData();
+            setInterval(fetchData, 1000);  
+        });
+    </script>
 {% endblock %}
