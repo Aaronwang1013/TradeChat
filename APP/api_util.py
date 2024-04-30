@@ -12,9 +12,7 @@ import logging
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import fear_and_greed
 from flask import jsonify
-#dynamic plot
-import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+
 
 vanderSentimentAnalyzer = SentimentIntensityAnalyzer()
 

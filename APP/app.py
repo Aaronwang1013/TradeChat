@@ -22,7 +22,7 @@ app = Flask(__name__)
 app.secret_key = Config.SECRET_KEY
 csrf = CSRFProtect(app)
 
-icons = ['TSLA.png', 'AAPL.png', 'AMZN.png', 'GOOG.png', 'META.png', 'MSFT.png', 'NVDA.png']
+icons = ['TSLA.png', 'aapl.png', 'amzn.png', 'goog.png', 'meta.png', 'msft.png', 'nvda.png']
 
 def token_required(func):
     @wraps(func)
