@@ -288,6 +288,33 @@ def get_comment_company_count():
     return jsonify(data)
 
 
+def backtest_price(start_date, end_date, company):
+    DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0"
+    client = MongoClient(DATABASE_URL)
+    collection = client['TradeChat']['stock_historical_price']
+    query = {
+        'date': {'$gte': start_date, '$lte': end_date},
+        'ticker': company
+    }
+    fields = {
+        'date': 1, 
+        'open': 1, 
+        'close': 1, 
+        'high': 1, 
+        'low': 1, 
+        'volume': 1,
+        '_id': 0,
+        'ADJ_Close': 1
+    }
+    documents = collection.find(query, fields)
+    data = []
+    for document in documents:
+        data.append(document)
+    return data
+
+
+    
+
 
 
 if __name__ == '__main__':

@@ -1,9 +1,72 @@
 {% extends "index.html" %}
 
-
 {% block content %}
     <h1>Welcome, {{ username }}</h1>
     <p>Email: {{ email }}</p>
-    <a href="{{ url_for('signout') }}" class="btn btn-danger">Logout</a>
-{% endblock %}
+    <form action="{{ url_for('signout') }}" method="post">
+        <button type="submit" class="btn btn-danger">Logout</button>
+    </form>
+    <br><br>
 
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="tradechat-description" style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 20px; margin-bottom: 20px;">
+                    <h2>TradeChat Backtesting System</h2>
+                    <p>Welcome to the TradeChat Backtesting System. Currently, we offer two types of strategy backtesting analysis, both using the basic Buy & Hold strategy as a benchmark. After entering the required information, click 'submit' to view the analysis results! We will continue to update and provide additional backtesting capabilities for more strategies in the future. If you have any suggestions, please feel free to contact us directly at: <a href="mailto:qazxsw523625@gmail.com">qazxsw523625@gmail.com</a></p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <form id="backtestForm" onsubmit="submitBacktest(event)">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                    <label for="companyList">Select a company:</label>
+                    <select id="companyList" name="companyList" onchange="updateDataBasedOnCompany()">
+                        <option value="AAPL">Apple</option>
+                        <option value="GOOG">Google</option>
+                        <option value="MSFT">Microsoft</option>
+                        <option value="TSLA">Tesla</option>
+                        <option value="NVDA">Nvidia</option>
+                        <option value="AMZN">Amazon</option>
+                        <option value="META">Meta</option> 
+                    </select><br><br>
+                    <label for="amount">Investment Amount ($):</label>
+                    <input type="number" id="amount" name="amount" required><br><br>
+                    <label for="startDate">Start Date:</label>
+                    <input type="date" id="startDate" name="startDate" required><br><br>
+                    <label for="endDate">End Date:</label>
+                    <input type="date" id="endDate" name="endDate" required><br><br>
+                    <label for="strategy">Select Strategy:</label>
+                    <select id="strategy" name="strategy">
+                        <option value="sma">Simple Moving Average</option>
+                        <option value="mean_reversion">Mean Reversion</option>
+                    </select><br><br>
+                    <button type="submit" class="registerbtn">Submit</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="plotly-chart"></div>
+    </div>
+
+    <script>
+        function submitBacktest(event) {
+            event.preventDefault(); 
+            const form = document.getElementById('backtestForm');
+            const formData = new FormData(form);
+        
+            fetch('/api/backtest', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                Plotly.newPlot('plotly-chart', data);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+        function updateDataBasedOnCompany() {
+            var selectedCompany = document.getElementById('companyList').value;
+            console.log(selectedCompany);
+        }
+    </script>
+{% endblock %}
