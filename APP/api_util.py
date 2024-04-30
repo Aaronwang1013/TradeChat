@@ -269,8 +269,13 @@ def create_fear_greed_gauge(value):
 
 def get_fear_greed_index():
     data = fear_and_greed.get()
-    return data.value
+    index = data.value
+    return index
 
+def get_fear_greed_updated_time():
+    data = fear_and_greed.get()
+    time = data.last_update
+    return time
 
 
 def get_comment_company_count():

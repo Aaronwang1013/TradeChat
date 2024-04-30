@@ -147,3 +147,7 @@ margin-top: 80px;
     justify-content:center;
     gap: 100px;
 }
+
+.last-update-time {
+    margin-left: 300px; 
+}

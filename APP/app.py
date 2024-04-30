@@ -11,6 +11,7 @@ from flask_bcrypt import generate_password_hash
 import forms
 from functools import wraps
 from pymongo import MongoClient
+import pytz
 # make plot
 from api_util import *
 # from functools import wraps
@@ -266,6 +267,13 @@ def fear_greed_gauge():
     graphJSON = create_fear_greed_gauge(round(current_index))
     return graphJSON
 
+@app.route('/fear_greed_updated_time')
+def fear_greed_updated_time():
+    last_update_time = get_fear_greed_updated_time()
+    taiwan_timezone = pytz.timezone('Asia/Taipei')
+    taiwan_time = last_update_time.astimezone(taiwan_timezone)
+    formatted_time = taiwan_time.strftime('%Y-%m-%d %H:%M:%S')
+    return jsonify(lastUpdateTime=formatted_time)
 
 
 @app.route('/api/backtest', methods=['POST'])

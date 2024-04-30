@@ -40,6 +40,7 @@
             </div>
         </div>
     </div>  
+    <p id="fear-greed-time" class="last-update-time"></p>
     
     
     </div> 
@@ -99,9 +100,22 @@
             })
             .catch(error => console.error('Error loading the fear and greed index:', error));
     }
+
+    function FearGreedUpdatedTime() {
+        fetch('/fear_greed_updated_time')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('fear-greed-time').innerText = 'Last Updated: ' + data.lastUpdateTime;
+            })
+            .catch(error => {
+                console.error('Error loading the updated time:', error);
+            });
+    }
+
     window.onload = function() {
         document.getElementById('welcome-message').style.opacity = 1;
         renderFearGreedGauge(); 
+        FearGreedUpdatedTime();
         showResult('MSFT');
     };
 </script>
