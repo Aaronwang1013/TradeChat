@@ -280,7 +280,13 @@ def get_comment_company_count():
     collection = "comment"
     client = MongoClient(DATABASE_URL)
     collection = client['TradeChat'][collection]
+    today = datetime.now()
+    start_of_day = datetime(today.year, today.month, today.day, 0, 0, 0)
+    end_of_day = datetime(today.year, today.month, today.day, 23, 59, 59)
     pipeline = [
+        {"$match": 
+            {"timestamp": {"$gte": start_of_day, "$lte": end_of_day}
+        }},
         {"$group": {"_id": "$company", "count": {"$sum": 1}}}
     ]
     results = list(collection.aggregate(pipeline))
