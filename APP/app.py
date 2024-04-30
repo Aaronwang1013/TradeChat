@@ -139,7 +139,7 @@ def signin():
     return render_template('signin.html', form=loginform)
 
 
-@app.route('/user/signout')
+@app.route('/user/signout', methods = ['GET', 'POST'])
 def signout():
     response = make_response(redirect(url_for('index')))
     response.delete_cookie('access_token')
