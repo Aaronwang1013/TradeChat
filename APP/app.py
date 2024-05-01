@@ -17,11 +17,14 @@ from api_util import *
 # from functools import wraps
 import jwt 
 from datetime import datetime, timedelta
+# process real time data
+from flask_socketio import SocketIO, emit
 
 
 app = Flask(__name__)
 app.secret_key = Config.SECRET_KEY
 csrf = CSRFProtect(app)
+socketio = SocketIO(app)
 
 icons = ['TSLA.png', 'aapl.png', 'amzn.png', 'goog.png', 'meta.png', 'msft.png', 'nvda.png']
 
