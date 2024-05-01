@@ -189,7 +189,7 @@ def discussion():
     comments = collection.find().sort('_id', -1).skip((page-1)*per_page).limit(per_page)
     total_comments = collection.count_documents({})
     total_pages = total_comments // per_page + (1 if total_comments % per_page > 0 else 0)
-    return render_template('discussion.html', comments=comments, page=page, total_comments=total_comments, total_pages=total_pages)
+    return render_template('discussion.html', comments=comments, page=page, total_comments=total_comments, total_pages=total_pages, icons = icons)
 
 
 @app.route('/post_comment', methods=['POST'])
@@ -240,7 +240,6 @@ def stock():
 @app.route('/sentiment')
 def sentiment():
     company = request.args.get("company")
-    print(company)
     if company == 'Overall':  
         data = get_reddit_sentiment()
     elif company == 'AAPL':
