@@ -212,3 +212,17 @@ def insert_to_mongo_by_company(data, company):
         logging.error("Failed to insert data to MongoDB: %s", e)
 
 
+
+
+if __name__ == '__main__':
+    collection = ['AAPL_reddit', 'TSLA_reddit', 'NVDA_reddit', 'MSFT_reddit', 
+                  'AMZN_reddit', 'META_reddit', 'GOOGL_reddit']
+    tickers = ['AAPL', 'TSLA', 'NVDA_Stock', 'MSFT', 'amzn',
+        'meta', 'google']
+    index = 0
+    for i in tickers:
+        print(i)
+        posts = get_subreddit_posts(i)
+        data = parse_comment(posts)
+        insert_to_mongo_by_company(data, collection[index])
+        index += 1
