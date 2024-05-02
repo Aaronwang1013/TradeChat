@@ -4,3 +4,4 @@
 **/.DS_Store
 **/*.log
 deploy.sh
+deploy2.sh
