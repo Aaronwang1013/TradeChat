@@ -79,13 +79,13 @@ def get_realtime_data():
     client = MongoClient(DATABASE_URL)
     collection = client['TradeChat']['stock_realtime_price']
     latest_data = collection.find().sort([('_id', -1)]).limit(100)
-    timestamps = []
-    prices = []
+    prices = {}
     for record in latest_data:
-        timestamps.append(record['timestamp'])
-        prices.append(record['price'])
+        prices[record['symbol']] = record['price']
+        # timestamps.append(record['timestamp'])
+        # prices.append(record['price'])
     client.close()
-    return timestamps, prices
+    return prices
 
 
 def get_reddit_sentiment():
@@ -327,6 +327,6 @@ def backtest_price(start_date, end_date, company):
 
 
 if __name__ == '__main__':
-    # print(get_realtime_data())
+    print(get_realtime_data())
     # print(get_reddit_sentiment())
-    print(get_comment_company_count())
+    # print(get_comment_company_count())

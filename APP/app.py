@@ -14,16 +14,26 @@ from pymongo import MongoClient
 import pytz
 # make plot
 from api_util import *
+import random
+import time
 # from functools import wraps
 import jwt 
 from datetime import datetime, timedelta
+# process real time data
+from flask_socketio import SocketIO, emit
+import time
 
 
 app = Flask(__name__)
 app.secret_key = Config.SECRET_KEY
 csrf = CSRFProtect(app)
+socketio = SocketIO(app)
+
 
 icons = ['TSLA.png', 'aapl.png', 'amzn.png', 'goog.png', 'meta.png', 'msft.png', 'nvda.png']
+timestamp = []
+prices = []
+
 
 def token_required(func):
     @wraps(func)
@@ -227,14 +237,24 @@ def post_comment():
 
 @app.route('/stock')
 def stock():
-    timestamps, prices = get_realtime_data()
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=timestamps, y=prices, mode='lines', name='Stock Price'))
-    fig.update_layout(title='Realtime Stock Price', 
-                      xaxis_title='Timestamp', 
-                      yaxis_title='Price')
-    fig_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-    return render_template('stock.html',icons = icons, plot = fig_json)
+    prices = get_realtime_data()
+    return render_template('stock.html', icons = icons, prices=prices)
+
+def background_thread():
+    """ 後台線程，定期發送股價更新 """
+    while True:
+        # 模擬股價更新
+        stock_prices = get_realtime_data()  
+        socketio.emit('update_prices', {'data': stock_prices}, namespace='/stock')
+        time.sleep(1)  
+
+@socketio.on('connect', namespace='/stock')
+def test_connect():
+    global thread
+    if not thread.is_alive():
+        thread = socketio.start_background_task(background_thread)
+
+
 
 
 @app.route('/sentiment')
@@ -268,6 +288,7 @@ def fear_greed_gauge():
 
 @app.route('/fear_greed_updated_time')
 def fear_greed_updated_time():
+    time.sleep(3)
     last_update_time = get_fear_greed_updated_time()
     taiwan_timezone = pytz.timezone('Asia/Taipei')
     taiwan_time = last_update_time.astimezone(taiwan_timezone)
@@ -393,4 +414,5 @@ def comment_stats():
     return data
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    thread = socketio.start_background_task(background_thread)
+    socketio.run(app, debug=True)
