@@ -13,12 +13,14 @@ Trade Chat provides a platform for users to discuss companies of interest and re
   - [Technologies Used](#technologies-used)
 
 ## Feature
-Real-time market price of seven big tech companies from FinnhubAPI.
-Historical Twitter sentiment analysis of the seven big tech companies.
-Market sentiment analysis with Reddit posts and comments using PRAW.
+- Real-time market price of seven big tech companies from FinnhubAPI.
+- Historical Twitter sentiment analysis of the seven big tech companies.
+- Market sentiment analysis with Reddit posts and comments using PRAW.
+- Backtesting system.
+- Join a community of traders to discuss companies of interest.
 
 ## System Architecture
-
+![alt text](./docs/system_architecture.png)
 ## Technical Detail
 
 ## Demo
