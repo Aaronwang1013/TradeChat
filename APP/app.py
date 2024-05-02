@@ -238,20 +238,22 @@ def post_comment():
 @app.route('/stock')
 def stock():
     prices = get_realtime_data()
-    # fig = go.Figure()
-    # fig.add_trace(go.Scatter(x=timestamps, y=prices, mode='lines', name='Stock Price'))
-    # fig.update_layout(title='Realtime Stock Price', 
-    #                   xaxis_title='Timestamp', 
-    #                   yaxis_title='Price')
-    # fig_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-    # return render_template('stock.html',icons = icons, plot = fig_json)
     return render_template('stock.html', icons = icons, prices=prices)
 
+def background_thread():
+    """ 後台線程，定期發送股價更新 """
+    while True:
+        # 模擬股價更新
+        stock_prices = get_realtime_data()  
+        socketio.emit('update_prices', {'data': stock_prices}, namespace='/stock')
+        time.sleep(1)  
 
-@socketio.on('real_time_stock', namespace='/stock')
-def handle_update_request():
-    prices = get_realtime_data()
-    emit('update_prices', prices)
+@socketio.on('connect', namespace='/stock')
+def test_connect():
+    global thread
+    if not thread.is_alive():
+        thread = socketio.start_background_task(background_thread)
+
 
 
 
@@ -412,4 +414,5 @@ def comment_stats():
     return data
 
 if __name__ == "__main__":
+    thread = socketio.start_background_task(background_thread)
     socketio.run(app, debug=True)
