@@ -17,6 +17,7 @@ from api_util import *
 # from functools import wraps
 import jwt 
 from datetime import datetime, timedelta
+import time
 
 
 app = Flask(__name__)
@@ -268,6 +269,7 @@ def fear_greed_gauge():
 
 @app.route('/fear_greed_updated_time')
 def fear_greed_updated_time():
+    time.sleep(3)
     last_update_time = get_fear_greed_updated_time()
     taiwan_timezone = pytz.timezone('Asia/Taipei')
     taiwan_time = last_update_time.astimezone(taiwan_timezone)
