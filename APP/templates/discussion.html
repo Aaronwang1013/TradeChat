@@ -18,12 +18,65 @@
         font-weight: bold;     
     }
     #commentChart {
-        width: 30%; 
-        height: 400px; 
         margin-left: auto;
         margin-right: 10%; 
         margin-top: 1%;
-        /* margin-bottom: auto; */
+    }
+    .stock-container {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        grid-gap: 10px;
+        max-width: 600px;
+        margin: auto;
+    }
+    
+    .stock-item {
+        background-color: #fff;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .stock-title {
+        font-size: 16px;
+        color: #333;
+        margin-bottom: 5px;
+    }
+    
+    .stock-price {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .stock-change {
+        font-size: 14px;
+        font-weight: bold;
+    }
+    
+    .green .stock-price,
+    .green .stock-change {
+        color: #4CAF50;  /* Green */
+    }
+    
+    .red .stock-price,
+    .red .stock-change {
+        color: #f44336;  /* Red */
+    }
+    .content-row {
+        display: flex;
+        justify-content: space-around; 
+        align-items: flex-start; 
+        margin-top: 20px; 
+    }
+    .stock-container, #commentChart {
+        flex: 1 1 45%;
+        min-width: 300px;
+    }
+    
+    #commentChart {
+        height: auto;
+        aspect-ratio: 2 / 1;
     }
     </style>
     <div class="discussion-content">
@@ -48,7 +101,46 @@
             <textarea id="comment" name="comment" rows="4" cols="50" required></textarea><br>
             <button type="submit">Submit</button>
         </form>
-        <canvas id="commentChart" width="600" height="400"></canvas>
+        <div class="content-row">
+            <div class="stock-container">
+                <div class="stock-item green">
+                    <div class="stock-title">NVDA</div>
+                    <div class="stock-price">28.75</div>
+                    <div class="stock-change">+0.09 (0.31%)</div>
+                </div>
+                <div class="stock-item green">
+                    <div class="stock-title">TSLA</div>
+                    <div class="stock-price">16.24</div>
+                    <div class="stock-change">+0.11 (0.67%)</div>
+                </div>
+                <div class="stock-item red">
+                    <div class="stock-title">GOOGL</div>
+                    <div class="stock-price">115.00</div>
+                    <div class="stock-change">-1.50 (1.32%)</div>
+                </div>
+                <div class="stock-item green">
+                    <div class="stock-title">MSFT</div>
+                    <div class="stock-price">54.10</div>
+                    <div class="stock-change">+0.40 (0.73%)</div>
+                </div>
+                <div class="stock-item green">
+                    <div class="stock-title">AAPL</div>
+                    <div class="stock-price">54.10</div>
+                    <div class="stock-change">+0.40 (0.73%)</div>
+                </div>
+                <div class="stock-item green">
+                    <div class="stock-title">AMZN</div>
+                    <div class="stock-price">54.10</div>
+                    <div class="stock-change">+0.40 (0.73%)</div>
+                </div>
+                <div class="stock-item green">
+                    <div class="stock-title">META</div>
+                    <div class="stock-price">54.10</div>
+                    <div class="stock-change">+0.40 (0.73%)</div>
+                </div>
+            </div>
+            <canvas id="commentChart"></canvas>
+        </div>
         <div id="comments">
             {% for comment in comments %}
                 <div class="comment comment-content">
@@ -115,21 +207,36 @@
                 }
             });
 
-            function fetchData() {
-                fetch('/api/comment_stats')
-                    .then(response => response.json())
-                    .then(data => {
-                        const sortedKeys = Object.keys(data).sort((a, b) => data[b] - data[a]);
-                        const sortedValues = sortedKeys.map(key => data[key]);
-                        commentChart.data.labels = sortedKeys;
-                        commentChart.data.datasets[0].data = sortedValues;
-                        commentChart.update();
-                    })
-                    .catch(error => console.error('Error fetching data:', error));
-            }
+        function fetchData() {
+            fetch('/api/comment_stats')
+                .then(response => response.json())
+                .then(data => {
+                    const sortedKeys = Object.keys(data).sort((a, b) => data[b] - data[a]);
+                    const sortedValues = sortedKeys.map(key => data[key]);
+                    commentChart.data.labels = sortedKeys;
+                    commentChart.data.datasets[0].data = sortedValues;
+                    commentChart.update();
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
 
-            fetchData();
-            setInterval(fetchData, 1000);  
+        fetchData();
+        setInterval(fetchData, 1000);  
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            var socket = io.connect('http://' + document.domain + ':' + location.port + '/stock');
+    
+            socket.on('update_prices', function(prices) {
+                Object.keys(prices).forEach(function(company) {
+                    var priceElement = document.getElementById('price-' + company.toLowerCase());
+                    if (priceElement) {
+                        priceElement.textContent = prices[company];
+                    }
+                });
+            });
+            document.getElementById('update-button').addEventListener('click', function() {
+                socket.emit('request_update');
+            });
         });
     </script>
 {% endblock %}

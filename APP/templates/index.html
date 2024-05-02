@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.2.0/socket.io.js"
+        integrity="sha512-WL6WGKMPBiM9PnHRYIn5YEtq0Z8XP4fkVb4qy7PP4vhmYQErJ/dySyXuFIMDf1eEYCXCrQrMJfkNwKc9gsjTjA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
     <div class="line"></div>
@@ -17,7 +20,6 @@
     </div>
     <div>
         <h1 id="welcome-message" style="opacity: 0;">Welcome to TradeChat</h1>
-        
         <div class="icon-row">
             {% for icon in icons %}
                 <img src="{{ url_for('static', filename='images/company/' ~ icon) }}" alt="{{ icon.split('.')[0] }}" class="company-icon" onclick="showResult('{{ icon.split('.')[0] }}')">
@@ -57,6 +59,7 @@
         {% endif %}
     </a>   
     {% endblock %} 
+    
     
 </body>
 <script>
@@ -111,6 +114,11 @@
                 console.error('Error loading the updated time:', error);
             });
     }
+
+    var socket = io.connect();
+    socket.on('price', function(data) {
+        document.getElementById('price').innerHTML = '<h2>Current Price: $' + data.data + '</h2>';
+    });
 
     window.onload = function() {
         document.getElementById('welcome-message').style.opacity = 1;
