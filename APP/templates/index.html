@@ -5,26 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TradeChat</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.2.0/socket.io.js"
+        integrity="sha512-WL6WGKMPBiM9PnHRYIn5YEtq0Z8XP4fkVb4qy7PP4vhmYQErJ/dySyXuFIMDf1eEYCXCrQrMJfkNwKc9gsjTjA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 <body>
     <div class="line"></div>
     <div class="text">
-        <p class="hover-effect" id="hover1">Why social media sentiment analysis?</p>
-        <p class="hover-effect" id="hover2">Real-time stock price and Reddit comment</p>
-        <p class="hover-effect" id="hover3">Join the discussion!</p>
+        <p class="hover-effect" id="hover1"><a href="{{ url_for('index') }}">Why social media sentiment analysis?</a></p>
+        <p class="hover-effect" id="hover2"><a href="{{ url_for('stock') }}">Reddit comment VS Stock Price</a></p>
+        <p class="hover-effect" id="hover3"><a href="{{ url_for('discussion') }}">Join the discussion!</a></p>
     </div>
     <div>
         <h1 id="welcome-message" style="opacity: 0;">Welcome to TradeChat</h1>
-        <h1 class="header">Navigate Market Sentiment: Twitter Trends and Stock Correlations</h1>
         <div class="icon-row">
             {% for icon in icons %}
                 <img src="{{ url_for('static', filename='images/company/' ~ icon) }}" alt="{{ icon.split('.')[0] }}" class="company-icon" onclick="showResult('{{ icon.split('.')[0] }}')">
             {% endfor %}
         </div>
-    </div>    
-    <a href="{{ url_for('signup') }}" class="user-icon">
-        <img src="{{ url_for('static', filename='images/user.png') }}" alt="SignUp">
-    </a>
+    </div>
+    {% block content %}
+    <div id="fear-greed-gauge-chart">
+        <div class="fear-greed-container">
+            <div class="fear-greed-text">
+                <h1>Fear & Greed Index</h1>
+                <h2>What is it?</h2>
+                <p>The Fear & Greed Index measures stock market sentiment, indicating whether excessive fear or greed is driving stock prices. Developed by CNN Business, it helps assess if the market is fairly priced.</p>
+                <h2>How is it calculated?</h2>
+                <p>The index combines seven indicators including market momentum, stock price strength, put/call options, and more, to score the market from 0 (maximum fear) to 100 (maximum greed).</p>
+                <h2>How often is it updated?</h2>
+                <p>The index updates daily, recalculating each component as new data comes in.</p>
+                <h2>How to use it?</h2>
+                <p>Investors use it to gauge market mood and check their own emotional biases. It serves as a complement to fundamental analysis, providing insights into whether market emotions align with economic data.</p>
+            </div>
+        </div>
+    </div>  
+    <p id="fear-greed-time" class="last-update-time"></p>
+    
+    
+    </div> 
+    <h1 class="header">Navigate Market Sentiment: Twitter Trends and Stock Correlations</h1> 
+    <div id="result-container">
+        <div id="loading-message">Please wait a moment...</div>
+        <div id="plotly-chart"></div>
+    </div>
+    <div>
+    <a href="{{ url_for('profile') }}" class="user-icon">
+        <img src="{{ url_for('static', filename='images/user.png') }}" alt="Profile">
+        {% if username %}
+            <p>Hi, {{ username }}!</p>
+        {% endif %}
+    </a>   
+    {% endblock %} 
+    
+    
 </body>
 <script>
     var hoverElements = document.querySelectorAll('.hover-effect');
@@ -37,13 +73,58 @@
         });
     });
     function showResult(companyName) {
-        var imagePath = '{{ url_for("static", filename="images/results/") }}' + companyName + '_result.png';
-        document.getElementById('result-img').src = imagePath;
-        document.getElementById('result-img').alt = companyName + " Result";
+        console.log(companyName);
+        var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+        document.getElementById('loading-message').style.display = 'block';
+        fetch('/twitter_sentiment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken  
+            },
+            body: JSON.stringify({ company: companyName }),
+        })
+        .then(response => response.json()) 
+        .then(data => {
+            // Render Plotly chart using the received data
+            Plotly.newPlot('plotly-chart', data);
+            document.getElementById('loading-message').style.display = 'none';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('loading-message').style.display = 'none';
+        }); 
     }
+    function renderFearGreedGauge() {
+        fetch('/fear_greed_gauge')
+            .then(response => response.json())
+            .then(data => {
+                Plotly.newPlot('fear-greed-gauge-chart', data);
+            })
+            .catch(error => console.error('Error loading the fear and greed index:', error));
+    }
+
+    function FearGreedUpdatedTime() {
+        fetch('/fear_greed_updated_time')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('fear-greed-time').innerText = 'Last Updated: ' + data.lastUpdateTime;
+            })
+            .catch(error => {
+                console.error('Error loading the updated time:', error);
+            });
+    }
+
+    var socket = io.connect();
+    socket.on('price', function(data) {
+        document.getElementById('price').innerHTML = '<h2>Current Price: $' + data.data + '</h2>';
+    });
 
     window.onload = function() {
         document.getElementById('welcome-message').style.opacity = 1;
+        renderFearGreedGauge(); 
+        FearGreedUpdatedTime();
+        showResult('MSFT');
     };
 </script>
 </html>

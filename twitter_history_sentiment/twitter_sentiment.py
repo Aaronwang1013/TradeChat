@@ -1,10 +1,14 @@
 ## use historical twitter dataset to show the sentiment of the tweets
 
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 import re
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+from pymongo.mongo_client import MongoClient
+from config import Config
+import json
+
 vanderSentimentAnalyzer = SentimentIntensityAnalyzer()
 
 
@@ -67,35 +71,28 @@ def getVanderSentiment(score):
     return score
 
 
-def sentiment_overtime(tweet_df, stock_df, title, score_column_name="score", save_path=None):
-    print("\n\n")
-    fig = plt.figure(figsize=(24,10))
-    ax1 = fig.add_subplot()
-    ax2 = ax1.twinx()
-    
-    # Customize colors
-    tweet_color = 'blue'
-    stock_color = 'orange'
-    
-    ax1.vlines(tweet_df['day_date'], 0, tweet_df[score_column_name], color=tweet_color) 
-    ax1.axhline(y=0, color='r', linestyle='-')
 
+def sentiment_overtime(tweet_df, stock_df, title, score_column_name="score", save_path=None):
+    fig = make_subplots(specs=[[{"secondary_y": True}]])
     
-    ax2.plot(stock_df['day_date'], stock_df['close_value'], color=stock_color, label='Stock price')
-    ax2.set_title("Effects of " + title +" tweets to stock price")
-    lines, labels = ax1.get_legend_handles_labels()
-    lines2, labels2 = ax2.get_legend_handles_labels()
-    
-    ax1.set_xlabel('Day date')
-    ax1.set_ylabel(score_column_name, color=tweet_color)
-    ax2.set_ylabel('Stock Price', color=stock_color)
-    
-    ax2.legend(lines + lines2, labels + labels2, loc=0)
-    
-    if save_path:
-        plt.savefig(save_path)
-    else:
-        plt.show()
+    fig.add_trace(
+        go.Scatter(x=tweet_df['day_date'], y=tweet_df[score_column_name], mode='lines', name=score_column_name),
+        secondary_y=False,
+    )
+
+    fig.add_trace(
+        go.Scatter(x=stock_df['day_date'], y=stock_df['close_value'], mode='lines', name='Stock Price'),
+        secondary_y=True,
+    )
+
+    fig.update_layout(
+        title=f"Effects of {title} tweets to stock price",
+        xaxis_title="Day date",
+        yaxis_title=score_column_name,
+        yaxis2_title="Stock Price",
+    )
+
+    return fig
 
 
 
@@ -110,20 +107,27 @@ def draw_stock_price_with_sentiment(tweet_df, stock_df, start_day, end_day, scor
             continue
 
         company_name = sub_company.iloc[0]
-    #     print(company_name)
 
         print(f"Stock price of {company_name} company with ticker symbol is {ticker_symbol}")
 
         sub_tweet_df = tweet_df[tweet_df["ticker_symbol"] == ticker_symbol]
         sub_tweet_df = sub_tweet_df[(sub_tweet_df["day_date"]>=pd.to_datetime(start_day)) & (sub_tweet_df["day_date"]<=pd.to_datetime(end_day))]
-    #     print(sub_tweet_df[:5])
+
         sub_stock_df = stock_df[stock_df["ticker_symbol"] == ticker_symbol]
         sub_stock_df = sub_stock_df[(sub_stock_df["day_date"]>=pd.to_datetime(start_day)) & (sub_stock_df["day_date"]<=pd.to_datetime(end_day))]
-
-    #     print(sub_stock_df[:5])
         save_path = f"./images/{ticker_symbol}_sentiment_overtime.png"
         sentiment_overtime(sub_tweet_df, sub_stock_df, company_name, score_column_name=score_name, save_path = save_path)
 
+def store_in_db(tweet_df, stock_df):
+    DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+    client = MongoClient(DATABASE_URL)
+    tweet_data = json.loads(tweet_df)
+    stock_data = json.loads(stock_df)
+    collection = client['TradeChat']['Twitter_tweets']
+    collection.insert_many(tweet_data)
+    client = MongoClient(DATABASE_URL)
+    collection = client['TradeChat']['Twitter_stock']
+    collection.insert_many(stock_data)
 
 if __name__ == '__main__':
     stock_df, tweet_df, company_value = read_data()
@@ -137,4 +141,6 @@ if __name__ == '__main__':
     end_day = max(tweet_df['day_date'])
     stock_df = stock_df[(stock_df['day_date'] >= start_day) & (stock_df['day_date'] <= end_day)]
     stock_df = stock_df.sort_values(by="day_date")
-    draw_stock_price_with_sentiment(tweet_df, stock_df, start_day, end_day)
+    stock_json = stock_df.to_json(orient="records")
+    tweet_json = tweet_df.to_json(orient="records")
+    store_in_db(tweet_json, stock_json)

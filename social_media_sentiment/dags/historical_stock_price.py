@@ -18,6 +18,7 @@ def extract_ticker(tickers, start_date, end_date):
                 "high": df.iloc[i]['High'],
                 "low": df.iloc[i]['Low'],
                 "close": df.iloc[i]['Close'],
+                "ADJ_Close": df.iloc[i]['Adj Close'],
                 "volume": df.iloc[i]['Volume']
             }
             insert_to_mongo(stock_data)
@@ -36,4 +37,4 @@ def insert_to_mongo(data):
 
 if __name__ == '__main__':
     tickers = ['AAPL', 'TSLA', 'NVDA', 'MSFT', 'AMZN', 'META', 'GOOG']
-    extract_ticker(tickers, '2000-01-01', '2024-04-12')
+    extract_ticker(tickers, '2020-01-01', '2024-04-28')

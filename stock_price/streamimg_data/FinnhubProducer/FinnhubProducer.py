@@ -26,8 +26,8 @@ class FinnhubProducer:
         self.finnhub_client = load_client(Config.FINN_API_KEY)
         self.producer = load_producer(f"{Config.KAFKA_SERVER}:{Config.KAFKA_PORT}")
         self.avro_schema = load_avro_schema('src/schema/trades.avsc')
-        # self.tickers = ["TSLA", "NVDA"]
-        self.tickers = ["BINANCE:BTCUSDT", "BINANCE:ETHUSDT"]
+        self.tickers = ["BINANCE:BTCUSDT", "TSLA", "NVDA", "AMZN", "AAPL", "GOOGL", "MSFT", "META"]
+        # self.tickers = ["BINANCE:BTCUSDT", "BINANCE:ETHUSDT"]
         ## get real-time stock data from finnhub
         websocket.enableTrace(True)
         self.ws = websocket.WebSocketApp(f"wss://ws.finnhub.io?token={Config.FINN_API_KEY}",
@@ -39,19 +39,33 @@ class FinnhubProducer:
 
     def on_message(self, ws, message):
         message = json.loads(message)
-        try:
-            avro_message = avro_encode(
-                {
-                    'data': message['data'],
-                    'type': message['type']
-                },
-                self.avro_schema
-            )
-            print("avro:" , avro_message)
-            self.producer.produce(Config.KAFKA_TOPIC, avro_message)
-            ti.sleep(5)
-        except Exception as e:
-            print(e)
+        for i in message['data']:
+            ticker = i['s']
+            if ticker == 'BINANCE:BTCUSDT':
+                topic = 'BTC'
+            elif ticker == 'TSLA':
+                topic = 'TSLA'
+            elif ticker == 'NVDA':
+                topic = 'NVDA'
+            elif ticker == 'AMZN':
+                topic = 'AMZN'
+            elif ticker == 'GOOGL':
+                topic = 'GOOG'
+            elif ticker == 'MSFT':
+                topic = 'MSFT'
+            elif ticker == 'AAPL':
+                topic = 'AAPL'
+            elif ticker == 'META':
+                topic = 'META'
+            else:
+                continue 
+            try:
+                avro_message = avro_encode({'data': [i]}, self.avro_schema)
+                self.producer.produce(topic, avro_message)
+            
+            except Exception as e:
+                print(e)
+                
 
     def on_error(self, ws, error):
         print(error)
@@ -62,14 +76,14 @@ class FinnhubProducer:
     def on_open(self, ws):
         if is_market_open():
             for ticker in self.tickers:
-                self.ws.send(f'{{"type": "subscribe", "symbol":"{ticker}"}}')
+                # self.ws.send(f'{{"type": "subscribe", "symbol":"{ticker}"}}')
+                self.ws.send(json.dumps({"type": "subscribe", "symbol": ticker}))
         else:
             print("Market is closed")
             self.ws.close()
 
 
 if __name__ == "__main__":
-    # FinnhubProducer()
     while True:
         if is_market_open():
             FinnhubProducer()
