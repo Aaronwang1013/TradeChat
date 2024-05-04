@@ -53,16 +53,6 @@
         font-size: 14px;
         font-weight: bold;
     }
-    
-    .green .stock-price,
-    .green .stock-change {
-        color: #4CAF50;  /* Green */
-    }
-    
-    .red .stock-price,
-    .red .stock-change {
-        color: #f44336;  /* Red */
-    }
     .content-row {
         display: flex;
         justify-content: space-around; 
@@ -87,46 +77,46 @@
         font-size: 24px;
         font-weight: bold;
         margin-bottom: 5px;
-        transition: all 0.3s ease-in-out;  /* 平滑過渡效果 */
+        transition: all 0.3s ease-in-out;  
     }
     
     .stock-price.flash {
-        animation: flash 1s; /* 執行閃爍動畫 */
+        animation: flash 1s; 
     }
     </style>
     <div class="discussion-content">
         
         <div class="content-row">
             <div class="stock-container">
-                <div class="stock-item green" id="stock-binancebtcusdt">
+                <div class="stock-item" id="stock-binancebtcusdt">
                     <div class="stock-title">BTC</div>
                     <div class="stock-price" id="price-binancebtcusdt">-</div>
                 </div>
-                <div class="stock-item green" id="stock-nvda">
+                <div class="stock-item" id="stock-nvda">
                     <div class="stock-title">NVDA</div>
                     <div class="stock-price" id="price-nvda">-</div>
                 </div>
-                <div class="stock-item green" id="stock-tsla">
+                <div class="stock-item" id="stock-tsla">
                     <div class="stock-title">TSLA</div>
                     <div class="stock-price" id="price-tsla">-</div>
                 </div>
-                <div class="stock-item red" id="stock-googl">
+                <div class="stock-item" id="stock-googl">
                     <div class="stock-title">GOOGL</div>
                     <div class="stock-price" id="price-googl">-</div>
                 </div>
-                <div class="stock-item green" id="stock-msft">
+                <div class="stock-item" id="stock-msft">
                     <div class="stock-title">MSFT</div>
                     <div the="stock-price" id="price-msft">-</div>
                 </div>
-                <div class="stock-item green" id="stock-aapl">
+                <div class="stock-item" id="stock-aapl">
                     <div class="stock-title">AAPL</div>
                     <div the="stock-price" id="price-aapl">-</div>
                 </div>
-                <div class="stock-item green" id="stock-amzn">
+                <div class="stock-item" id="stock-amzn">
                     <div class="stock-title">AMZN</div>
                     <div the="stock-price" id="price-amzn">-</div>
                 </div>
-                <div class="stock-item green" id="stock-meta">
+                <div class="stock-item" id="stock-meta">
                     <div the="stock-title">META</div>
                     <div the="stock-price" id="price-meta">-</div>
                 </div>

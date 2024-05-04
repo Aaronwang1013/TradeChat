@@ -31,7 +31,7 @@ def login_and_get_token(session, email, password, csrf_token):
     response = session.post(login_url, data={"email": email, 
                                               "password": password, 
                                               "csrf_token": csrf_token})
-    time.sleep(2)
+    # time.sleep(2)
     if response.status_code == 200:
         print(f"Login successful for {email}")
         return session.cookies.get('access_token')
