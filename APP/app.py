@@ -241,7 +241,6 @@ def stock():
     return render_template('stock.html', icons = icons, prices=prices)
 
 def background_thread():
-    """ 後台線程，定期發送股價更新 """
     while True:
         # 模擬股價更新
         stock_prices = get_realtime_data()  

@@ -1,0 +1,14 @@
+Flask==3.0.2
+Flask-Bcrypt==1.0.1
+Flask-SocketIO==5.3.6
+Flask-WTF==1.2.1
+python-dotenv==1.0.0
+numpy==1.24.4
+openai==1.25.0
+pandas==2.0.3
+plotly==5.20.0
+pyJWT==2.8.0
+pymongo==4.7.0
+vaderSentiment==3.3.2
+fear_and_greed==0.4
+gunicorn==21.2.0
