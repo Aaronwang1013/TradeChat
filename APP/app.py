@@ -242,7 +242,6 @@ def stock():
 
 def background_thread():
     while True:
-        # 模擬股價更新
         stock_prices = get_realtime_data()  
         socketio.emit('update_prices', {'data': stock_prices}, namespace='/stock')
         time.sleep(1)  
