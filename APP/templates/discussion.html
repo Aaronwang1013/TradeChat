@@ -17,17 +17,13 @@
     .comment-header {
         font-weight: bold;     
     }
-    #commentChart {
-        margin-left: auto;
-        margin-right: 10%; 
-        margin-top: 1%;
-    }
     .stock-container {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         grid-gap: 10px;
         max-width: 600px;
         margin: auto;
+        padding-right: 10%;
     }
     
     .stock-item {
@@ -43,12 +39,6 @@
         margin-bottom: 5px;
     }
     
-    .stock-price {
-        font-size: 24px;
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
-    
     .stock-change {
         font-size: 14px;
         font-weight: bold;
@@ -59,27 +49,25 @@
         align-items: flex-start; 
         margin-top: 20px; 
     }
-    .stock-container, #commentChart {
-        flex: 1 1 45%;
+    .stock-container{
+        margin-left: 10%;
         min-width: 300px;
     }
-    
     #commentChart {
-        height: auto;
-        aspect-ratio: 2 / 1;
+        transform: scale(0.8);  
+        transform-origin: center;  
+        margin-right: 30%;
     }
     @keyframes flash {
         0%, 100% { background-color: transparent; }
         50% { background-color: yellow; }
     }
-    
     .stock-price {
         font-size: 24px;
         font-weight: bold;
         margin-bottom: 5px;
         transition: all 0.3s ease-in-out;  
     }
-    
     .stock-price.flash {
         animation: flash 1s; 
     }
@@ -106,19 +94,19 @@
                 </div>
                 <div class="stock-item" id="stock-msft">
                     <div class="stock-title">MSFT</div>
-                    <div the="stock-price" id="price-msft">-</div>
+                    <div class="stock-price" id="price-msft">-</div>
                 </div>
                 <div class="stock-item" id="stock-aapl">
                     <div class="stock-title">AAPL</div>
-                    <div the="stock-price" id="price-aapl">-</div>
+                    <div class="stock-price" id="price-aapl">-</div>
                 </div>
                 <div class="stock-item" id="stock-amzn">
                     <div class="stock-title">AMZN</div>
-                    <div the="stock-price" id="price-amzn">-</div>
+                    <div class="stock-price" id="price-amzn">-</div>
                 </div>
                 <div class="stock-item" id="stock-meta">
-                    <div the="stock-title">META</div>
-                    <div the="stock-price" id="price-meta">-</div>
+                    <div class="stock-title">META</div>
+                    <div class="stock-price" id="price-meta">-</div>
                 </div>
             </div>
             <canvas id="commentChart"></canvas>
@@ -130,7 +118,7 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label for="company">Select a company or overall economy:</label>
             <select id="company" name="company">
-                <option value="overall">Overall Economy</option>
+                <option value="Overall Economy">Overall Economy</option>
                 <option value="NVDA">NVDA</option>
                 <option value="GOOG">GOOG</option>
                 <option value="AMZN">AMZN</option>
@@ -200,7 +188,8 @@
                     }]
                 },
                 options: {
-                    indexAxis: 'y',
+                    responsive: true,  
+                    maintainAspectRatio: true, 
                     scales: {
                         y: {
                             beginAtZero: true
@@ -227,7 +216,7 @@
         });
         
         document.addEventListener('DOMContentLoaded', function() {
-            var socket = io.connect('http://' + document.domain + ':' + location.port + '/stock', {transports: ['websocket']});
+            var socket = io.connect('wss://' + document.domain + ':' + location.port + '/stock', {transports: ['websocket']});
             
             socket.on('connect', function() {
                 console.log("Connected to the server.");  

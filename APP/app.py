@@ -14,7 +14,6 @@ from pymongo import MongoClient
 import pytz
 # make plot
 from api_util import *
-import random
 import time
 # from functools import wraps
 import jwt 
@@ -22,6 +21,16 @@ from datetime import datetime, timedelta
 # process real time data
 from flask_socketio import SocketIO, emit
 import time
+import logging
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
+logger = logging.getLogger(__name__)
 
 
 app = Flask(__name__)
@@ -30,7 +39,7 @@ csrf = CSRFProtect(app)
 socketio = SocketIO(app)
 
 
-icons = ['TSLA.png', 'aapl.png', 'amzn.png', 'goog.png', 'meta.png', 'msft.png', 'nvda.png']
+icons = ['TSLA.png', 'AAPL.png', 'AMZN.png', 'GOOG.png', 'META.png', 'MSFT.png', 'NVDA.png']
 timestamp = []
 prices = []
 
@@ -60,6 +69,7 @@ def generate_access_token(username, email):
                 Config.SECRET_KEY,
                 algorithm=Config.JWT_ALGORITHM
             )
+    logger.info(f'Generated access token for {username}')
     return access_token
     
 
@@ -180,12 +190,16 @@ def twitter_sentiment():
     if request.method == 'POST':
         data = request.json
         company_name = data.get('company')
+        if company_name == "NVDA":
+            return jsonify({"error": "Sentiment analysis for NVDA is not available."}), 400
         tweet_df, stock_df = read_twitter_data(company_name)
         start_day = min(tweet_df['day_date'])
         end_day = max(tweet_df['day_date'])
         fig_json = draw_stock_price_with_sentiment(tweet_df, stock_df, start_day, end_day, company_name)
+        logger.info(f"Sentiment analysis for {company_name} completed")
         return fig_json
     else:
+        logger.error("Company name not found in request JSON")
         return jsonify({"error": "Company name not found in request JSON"}), 400
 
 
@@ -199,6 +213,7 @@ def discussion():
     comments = collection.find().sort('_id', -1).skip((page-1)*per_page).limit(per_page)
     total_comments = collection.count_documents({})
     total_pages = total_comments // per_page + (1 if total_comments % per_page > 0 else 0)
+    logger.info(f"Displaying discussion page {page} with {total_comments} comments.")
     return render_template('discussion.html', comments=comments, page=page, total_comments=total_comments, total_pages=total_pages, icons = icons)
 
 
@@ -226,11 +241,14 @@ def post_comment():
         }
         result = collection.insert_one(comment_data)
         if result.inserted_id:
+            logger.info(f"Comment posted by {username} for {company}")
             flash('Comment posted successfully!', 'success')
             return redirect(url_for('discussion'))
         else:
+            logger.error(f"Failed to post comment by {username}")
             return jsonify({"error": "Failed to post comment"}), 500
     else:
+        logger.error("User not signed in to post comment")
         flash('Please sign in to post a comment.', 'info')
         return redirect(url_for('signin'))
 
@@ -251,8 +269,6 @@ def test_connect():
     global thread
     if not thread.is_alive():
         thread = socketio.start_background_task(background_thread)
-
-
 
 
 @app.route('/sentiment')
@@ -276,12 +292,12 @@ def sentiment():
         data = get_sentiment_by_company(company)
     return data
 
-
-
 @app.route('/fear_greed_gauge')
 def fear_greed_gauge():
     current_index = get_fear_greed_index()
-    graphJSON = create_fear_greed_gauge(round(current_index))
+    if current_index:
+        logger.info(f"Fear and Greed Index: {current_index}")
+        graphJSON = create_fear_greed_gauge(round(current_index))
     return graphJSON
 
 @app.route('/fear_greed_updated_time')
@@ -291,6 +307,7 @@ def fear_greed_updated_time():
     taiwan_timezone = pytz.timezone('Asia/Taipei')
     taiwan_time = last_update_time.astimezone(taiwan_timezone)
     formatted_time = taiwan_time.strftime('%Y-%m-%d %H:%M:%S')
+    logger.info(f"Fear and Greed Index last updated at {formatted_time}")
     return jsonify(lastUpdateTime=formatted_time)
 
 
@@ -409,6 +426,7 @@ def backtest():
 @app.route('/api/comment_stats')
 def comment_stats():
     data = get_comment_company_count()
+    logger.info(f"Comment stats: {data}")
     return data
 
 if __name__ == "__main__":

@@ -73,7 +73,6 @@
         });
     });
     function showResult(companyName) {
-        console.log(companyName);
         var csrfToken = document.querySelector('meta[name="csrf-token"]').content;
         document.getElementById('loading-message').style.display = 'block';
         fetch('/twitter_sentiment', {
