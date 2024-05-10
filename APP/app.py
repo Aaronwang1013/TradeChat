@@ -19,7 +19,6 @@ import time
 import jwt 
 from datetime import datetime, timedelta
 # process real time data
-from flask_socketio import SocketIO, emit
 import time
 import logging
 
@@ -36,7 +35,6 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.secret_key = Config.SECRET_KEY
 csrf = CSRFProtect(app)
-socketio = SocketIO(app)
 
 
 icons = ['TSLA.png', 'AAPL.png', 'AMZN.png', 'GOOG.png', 'META.png', 'MSFT.png', 'NVDA.png']
@@ -255,6 +253,11 @@ def post_comment():
 
 @app.route('/stock')
 def stock():
+    return render_template('stock.html', icons = icons)
+
+
+@app.route('/stock_price')
+def stock_price():
     prices = get_realtime_data()
     return render_template('stock.html', icons = icons, prices=prices)
 
@@ -269,6 +272,8 @@ def test_connect():
     global thread
     if not thread.is_alive():
         thread = socketio.start_background_task(background_thread)
+
+
 
 
 @app.route('/sentiment')
@@ -430,5 +435,4 @@ def comment_stats():
     return data
 
 if __name__ == "__main__":
-    thread = socketio.start_background_task(background_thread)
-    socketio.run(app, debug=True)
+    app.run(debug=True)

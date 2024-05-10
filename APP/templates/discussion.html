@@ -78,7 +78,7 @@
             <div class="stock-container">
                 <div class="stock-item" id="stock-binancebtcusdt">
                     <div class="stock-title">BTC</div>
-                    <div class="stock-price" id="price-binancebtcusdt">-</div>
+                    <div class="stock-price" id="price-binance:btcusdt">-</div>
                 </div>
                 <div class="stock-item" id="stock-nvda">
                     <div class="stock-title">NVDA</div>
@@ -216,31 +216,33 @@
         });
         
         document.addEventListener('DOMContentLoaded', function() {
-            var socket = io.connect('wss://' + document.domain + ':' + location.port + '/stock', {transports: ['websocket']});
-            
-            socket.on('connect', function() {
-                console.log("Connected to the server.");  
-            });
-        
-            socket.on('update_prices', function(data) {
-                console.log("Received prices: ", data);  
-                let prices = data.data;
-                Object.keys(prices).forEach(function(company) {
-                    var priceElement = document.getElementById('price-' + company.toLowerCase().replace(/[^a-zA-Z0-9]/g, ''));
-                    if (priceElement) {
-                        if (priceElement.textContent !== prices[company].toString()) {
-                            priceElement.textContent = prices[company];
-                            priceElement.classList.add('flash');  
-                            setTimeout(function() {
-                                priceElement.classList.remove('flash');
-                            }, 1000); 
-                        }
-                    }
-                });
-            });
+            setInterval(fetchStockData, 5000);
         });
         
+        function fetchStockData() {
+            fetch('/stock_price')
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Received stock data: ", data);
+                    updateStockPrices(data);
+                })
+                .catch(error => console.error('Error fetching stock data:', error));
+        }
         
+        function updateStockPrices(data) {
+            Object.keys(data).forEach(function(company) {
+                var priceElement = document.getElementById('price-' + company.toLowerCase());
+                if (priceElement) {
+                    if (priceElement.textContent !== data[company].toString()) {
+                        priceElement.textContent = data[company];
+                        priceElement.classList.add('flash');
+                        setTimeout(function() {
+                            priceElement.classList.remove('flash');
+                        }, 1000);
+                    }
+                }
+            });
+        }        
         
     </script>
 {% endblock %}
