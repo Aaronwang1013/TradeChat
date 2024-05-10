@@ -78,12 +78,10 @@ def get_realtime_data():
     DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0"
     client = MongoClient(DATABASE_URL)
     collection = client['TradeChat']['stock_realtime_price']
-    latest_data = collection.find().sort([('_id', -1)]).limit(100)
+    latest_data = collection.find().sort([('_id', -1)]).limit(300)
     prices = {}
     for record in latest_data:
         prices[record['symbol']] = record['price']
-        # timestamps.append(record['timestamp'])
-        # prices.append(record['price'])
     client.close()
     return prices
 

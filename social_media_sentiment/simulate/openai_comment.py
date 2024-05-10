@@ -27,7 +27,7 @@ def generate_comment(company):
 
 
 def login_and_get_token(session, email, password, csrf_token):
-    login_url = 'http://54.254.126.184/user/signin'
+    login_url = 'https://tradechat.online/user/signin'
     response = session.post(login_url, data={"email": email, 
                                               "password": password, 
                                               "csrf_token": csrf_token})
@@ -41,7 +41,7 @@ def login_and_get_token(session, email, password, csrf_token):
 
 
 def post_comment(session, token, comment, company, csrf_token):
-    post_url = "http://54.254.126.184/post_comment"
+    post_url = "https://tradechat.online/post_comment"
     headers = {
         "Authorization": f"Bearer {token}"
     }
@@ -55,7 +55,7 @@ def post_comment(session, token, comment, company, csrf_token):
 
 def simulate(user_emails, companies, company_weights):
     session = requests.Session()
-    csrf_url = 'http://54.254.126.184/user/signin'
+    csrf_url = 'https://tradechat.online/user/signin'
     csrf_token = get_csrf_token(session, csrf_url)
     try:
         while True:

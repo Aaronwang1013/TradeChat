@@ -14,20 +14,17 @@ from pymongo import MongoClient
 import pytz
 # make plot
 from api_util import *
-import random
 import time
 # from functools import wraps
 import jwt 
 from datetime import datetime, timedelta
 # process real time data
-from flask_socketio import SocketIO, emit
 import time
 
 
 app = Flask(__name__)
 app.secret_key = Config.SECRET_KEY
 csrf = CSRFProtect(app)
-socketio = SocketIO(app)
 
 
 icons = ['TSLA.png', 'aapl.png', 'amzn.png', 'goog.png', 'meta.png', 'msft.png', 'nvda.png']
@@ -237,22 +234,13 @@ def post_comment():
 
 @app.route('/stock')
 def stock():
+    return render_template('stock.html', icons = icons)
+
+
+@app.route('/stock_price')
+def stock_price():
     prices = get_realtime_data()
-    return render_template('stock.html', icons = icons, prices=prices)
-
-def background_thread():
-    while True:
-        stock_prices = get_realtime_data()  
-        socketio.emit('update_prices', {'data': stock_prices}, namespace='/stock')
-        time.sleep(1)  
-
-@socketio.on('connect', namespace='/stock')
-def test_connect():
-    global thread
-    if not thread.is_alive():
-        thread = socketio.start_background_task(background_thread)
-
-
+    return jsonify(prices)
 
 
 @app.route('/sentiment')
@@ -412,5 +400,4 @@ def comment_stats():
     return data
 
 if __name__ == "__main__":
-    thread = socketio.start_background_task(background_thread)
-    socketio.run(app, debug=True)
+    app.run(debug=True)
