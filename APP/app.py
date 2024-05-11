@@ -259,20 +259,7 @@ def stock():
 @app.route('/stock_price')
 def stock_price():
     prices = get_realtime_data()
-    return render_template('stock.html', icons = icons, prices=prices)
-
-def background_thread():
-    while True:
-        stock_prices = get_realtime_data()  
-        socketio.emit('update_prices', {'data': stock_prices}, namespace='/stock')
-        time.sleep(1)  
-
-@socketio.on('connect', namespace='/stock')
-def test_connect():
-    global thread
-    if not thread.is_alive():
-        thread = socketio.start_background_task(background_thread)
-
+    return jsonify(prices)
 
 
 
