@@ -16,12 +16,12 @@ from flask import jsonify
 
 vanderSentimentAnalyzer = SentimentIntensityAnalyzer()
 
+DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0"
+client = MongoClient(DATABASE_URL)
 
 
 
 def read_twitter_data(company=None):
-    DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0"
-    client = MongoClient(DATABASE_URL)
     tweet_collection = client['TradeChat']['Twitter_tweets']
     stock_collection = client['TradeChat']['Twitter_stock']
     target_company = {}
@@ -75,8 +75,6 @@ def draw_stock_price_with_sentiment(tweet_df, stock_df, start_day, end_day, comp
 
 def get_realtime_data():
     #connect to mongodb
-    DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0"
-    client = MongoClient(DATABASE_URL)
     collection = client['TradeChat']['stock_realtime_price']
     latest_data = collection.find().sort([('_id', -1)]).limit(300)
     prices = {}
@@ -87,8 +85,6 @@ def get_realtime_data():
 
 
 def get_reddit_sentiment():
-    DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0"
-    client = MongoClient(DATABASE_URL)
     collection = client['TradeChat']['reddit']
     end_date = datetime.utcnow()
     start_date = end_date - timedelta(days=5)
@@ -139,9 +135,7 @@ def get_reddit_sentiment():
 
 
 def get_sentiment_by_company(company):
-    DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0"
     company_reddit_collection = f"{company}_reddit"
-    client = MongoClient(DATABASE_URL)
     collection = client['TradeChat'][company_reddit_collection]
     end_date = datetime.utcnow()
     start_date = end_date - timedelta(days=5)
@@ -277,9 +271,7 @@ def get_fear_greed_updated_time():
 
 
 def get_comment_company_count():
-    DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0"
     collection = "comment"
-    client = MongoClient(DATABASE_URL)
     collection = client['TradeChat'][collection]
     today = datetime.now()
     start_of_day = datetime(today.year, today.month, today.day, 0, 0, 0)
@@ -296,8 +288,6 @@ def get_comment_company_count():
 
 
 def backtest_price(start_date, end_date, company):
-    DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0"
-    client = MongoClient(DATABASE_URL)
     collection = client['TradeChat']['stock_historical_price']
     query = {
         'date': {'$gte': start_date, '$lte': end_date},
@@ -319,12 +309,101 @@ def backtest_price(start_date, end_date, company):
         data.append(document)
     return data
 
-
-    
-
-
-
-if __name__ == '__main__':
-    print(get_realtime_data())
-    # print(get_reddit_sentiment())
-    # print(get_comment_company_count())
+def backtest_figure(df, amount, company, strategy):
+    df['date'] = pd.to_datetime(df['date'])
+    df.set_index(df['date'], inplace=True)
+    # calculate benefits
+    df['bnh_returns'] = np.log(df['close']/df['close'].shift(1))
+    initial_price = df['close'].iloc[0]
+    shares_bought = int(amount) / initial_price
+    df['protfolio_value'] = shares_bought * df['close']
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(x = df['date'],
+                y = df['protfolio_value'],
+                mode = 'lines',
+                name = f'By and hold strategy in {company}')
+    )
+    fig.add_annotation(
+        x=df.index[-1], y=df['protfolio_value'].iloc[-1],
+        text=f"Final Value: ${df['protfolio_value'].iloc[-1]:,.2f}",
+        showarrow=True,
+        arrowhead=1,
+        ax=-50,
+        ay=-100
+    )
+    ## MA strategy
+    if strategy == 'sma':
+        df['SMA50'] =df['close'].rolling(window=50).mean()
+        df['SMA200'] = df['close'].rolling(window=200).mean()
+        ## trading signal
+        df['signal'] = 0
+        df['signal'][50:] = df['SMA50'][50:] > df['SMA200'][50:]
+        # if SMA50 > SMA200, then buy, else sell
+        # df['position'] = np.where(df['SMA50'] > df['SMA200'], 1, 0)
+        df['position'] = np.where(df['SMA50'] > df['SMA200'], 1, 
+                          np.where(df['SMA50'] < df['SMA200'], -1, 0))
+        # move the signal today to tomorrow
+        df['position'] = df['position'].shift(1)
+        df.dropna(inplace=True) 
+        # calculate strategy returns
+        df['strategy_returns'] = df['bnh_returns'] * df['position']
+        df['portfolio_value_sma'] = (np.exp(df['strategy_returns'].cumsum())) * int(amount)
+        # make ma plot
+        fig.add_trace(
+        go.Scatter(x=df['date'], 
+                    y=df['portfolio_value_sma'], 
+                    mode='lines', 
+                    name=f'SMA Strategy in {company}')
+        )
+        fig.update_layout(
+        title = "Comparsion between Strategies",
+        xaxis_title = "Date",
+        yaxis_title = "Portfolio Value",
+        template='plotly_dark',
+        showlegend=True
+        )
+        fig.add_annotation(
+            x=df.index[-1], y=df['portfolio_value_sma'].iloc[-1],
+            text=f"Final Value: ${df['portfolio_value_sma'].iloc[-1]:,.2f}",
+            showarrow=True,
+            arrowhead=1,
+            ax=-50,
+            ay=-100
+        )
+        fig_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+    ## mean reversion
+    if strategy == 'mean_reversion':
+        window = 25
+        df['mean_price'] = df['close'].rolling(window=window).mean()
+        df['std_dev'] = df['close'].rolling(window=window).std()
+        # set the upper and lower bands
+        df['lower_band'] = df['mean_price'] - 2 * df['std_dev']
+        df['upper_band'] = df['mean_price'] + 2 * df['std_dev']
+        df['position'] = np.where(df['close'] < df['lower_band'], 1, np.where(df['close'] > df['upper_band'], -1, 0))
+        df['position'] = df['position'].shift(1)
+        df['mr_returns'] = df['bnh_returns'] * df['position']
+        df['portfolio_value_mr'] = (np.exp(df['mr_returns'].cumsum())) * int(amount)
+        fig.add_trace(
+        go.Scatter(x=df['date'], 
+                    y=df['portfolio_value_mr'], 
+                    mode='lines', 
+                    name=f'MR Strategy in {company}')
+        )
+        fig.update_layout(
+        title = "Comparsion between Strategies",
+        xaxis_title = "Date",
+        yaxis_title = "Portfolio Value",
+        template='plotly_dark',
+        showlegend=True
+        )
+        fig.add_annotation(
+            x=df.index[-1], y=df['portfolio_value_mr'].iloc[-1],
+            text=f"Final Value: ${df['portfolio_value_mr'].iloc[-1]:,.2f}",
+            showarrow=True,
+            arrowhead=1,
+            ax=-50,
+            ay=-100
+        )
+        fig_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+    return fig_json
