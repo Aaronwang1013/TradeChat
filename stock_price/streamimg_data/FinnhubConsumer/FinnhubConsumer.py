@@ -69,7 +69,7 @@ if __name__ == "__main__":
         .readStream \
         .format("kafka") \
         .option("startingOffsets", "latest") \
-        .option("kafka.bootstrap.servers", "kafka:9092") \
+        .option("kafka.bootstrap.servers", f"{Config.KAFKA_SERVER}:{Config.KAFKA_PORT}") \
         .option("subscribe", "TSLA,NVDA,AMZN,GOOG,AAPL,BTC,MSFT,META") \
         .load()
     

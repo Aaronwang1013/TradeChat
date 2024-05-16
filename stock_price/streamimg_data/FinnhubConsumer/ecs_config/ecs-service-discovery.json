@@ -1,0 +1,20 @@
+{
+    "cluster": "tradechat-v1-Cluster-gCKiEfF6ACNl",
+    "serviceName": "ecs-consumer-service-v1",
+    "taskDefinition": "ecs-consumer-v1",
+    "serviceRegistries": [
+       {
+          "registryArn": "arn:aws:servicediscovery:ap-southeast-1:975050306382:service/srv-krmrwttbxjqfq4oo"
+       }
+    ],
+    "launchType": "FARGATE",
+    "platformVersion": "LATEST",
+    "networkConfiguration": {
+       "awsvpcConfiguration": {
+          "assignPublicIp": "ENABLED",
+          "securityGroups": [ "sg-0588eac3a244f1574" ],
+          "subnets": [ "subnet-05b64e7ac60e181d6", "subnet-044231c13ea92e4f6", "subnet-0b1a7d8ee4c680a0c", "subnet-02e80b9ec711f3c2f" ]
+       }
+    },
+    "desiredCount": 1
+}
