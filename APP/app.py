@@ -153,8 +153,6 @@ def signin():
                     return response
             else:
                 flash('Login Unsuccessful. Please check username and password', 'danger')
-
-        return jsonify({'error': 'Invalid form data'}, 403)
     return render_template('signin.html', form=loginform)
 
 
