@@ -42,6 +42,20 @@ timestamp = []
 prices = []
 
 
+#get user name
+
+
+def get_username(access_token):
+    access_token = access_token.split(' ')[1]
+    decoded_token = jwt.decode(
+        access_token, 
+        Config.SECRET_KEY, 
+        algorithms=Config.JWT_ALGORITHM
+    )
+    username = decoded_token['sub']
+    email = decoded_token['email']
+    return username, email
+
 ## init mongo client
 DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 client = MongoClient(DATABASE_URL)

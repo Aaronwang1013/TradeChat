@@ -40,7 +40,7 @@ def test_avro_decode(spark):
         StructField("t", ArrayType(LongType()), True),
         StructField("v", ArrayType(LongType()), True)
     ])
-
+    assert decoded_df is not None, "decoded_df is None, avro_decode function failed"
     assert decoded_df.schema == expected_schema
     assert decoded_df.count() == 1
 
