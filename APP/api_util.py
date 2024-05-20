@@ -12,6 +12,7 @@ import logging
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 import fear_and_greed
 from flask import jsonify
+import jwt 
 
 
 vanderSentimentAnalyzer = SentimentIntensityAnalyzer()
@@ -407,3 +408,15 @@ def backtest_figure(df, amount, company, strategy):
         )
         fig_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
     return fig_json
+
+
+def get_username(access_token):
+    access_token = access_token.split(' ')[1]
+    decoded_token = jwt.decode(
+        access_token, 
+        Config.SECRET_KEY, 
+        algorithms=Config.JWT_ALGORITHM
+    )
+    username = decoded_token['sub']
+    email = decoded_token['email']
+    return username, email
