@@ -8,6 +8,7 @@ Trade Chat provides a platform for users to discuss companies of interest and re
   - [Feature](#feature)
   - [System Architecture](#system-architecture)
   - [Technical Detail](#technical-detail)
+    - [Real-time market price](#real-time-market-price)
   - [Demo](#demo)
   - [Deployment](#deployment)
   - [Technologies Used](#technologies-used)
@@ -22,7 +23,8 @@ Trade Chat provides a platform for users to discuss companies of interest and re
 ## System Architecture
 ![alt text](./docs/system_architecture.png)
 ## Technical Detail
-
+ ### Real-time market price
+ ![alt text](./docs/stock_data_pipeline.png)
 ## Demo
 
 ## Deployment

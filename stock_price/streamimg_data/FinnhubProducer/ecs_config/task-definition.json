@@ -1,0 +1,39 @@
+{
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "runtimePlatform": {
+        "operatingSystemFamily": "LINUX",
+        "cpuArchitecture": "ARM64"
+    },
+    "family": "ecs-producer-v1",
+    "memory": "2 GB",
+    "cpu": ".5 vCPU",
+    "executionRoleArn": "arn:aws:iam::975050306382:role/ecsTaskExecutionRole",
+    "networkMode": "awsvpc",
+    "containerDefinitions": [
+        {
+            "name": "python-producer",
+            "image": "975050306382.dkr.ecr.ap-southeast-1.amazonaws.com/tradechat/producer",
+            "essential": true,
+            "portMappings": [
+              {
+                "name": "python-producer-5051-tcp",
+                "containerPort": 5051,
+                "hostPort": 5051,
+                "protocol": "tcp", 
+                "appProtocol": "http"
+              }
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/python-producer",
+                    "awslogs-region": "ap-southeast-1",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            }
+          }]
+        
+    
+}

@@ -72,7 +72,7 @@
             "width": 1000,
             "height": 500,
             "symbol": symbol,
-            "interval": "D",
+            "interval": "1D",
             "timezone": "Etc/UTC",
             "theme": "light",
             "style": "2",
@@ -126,6 +126,12 @@
     }
 
     function updateCharts(data) {
+        if (Object.keys(data.scores).length === 0 &&
+            Object.values(data.sentiment_counts).every(count => count === 0) &&
+            Object.keys(data.sentiment_counts_by_date).length === 0) {
+            alert("Lack of reddit posts about this company within these days.");
+            return;
+        }
         const dates = Object.keys(data.scores);
         const scores = Object.values(data.scores);
         const sentiments = data.sentiment_counts;

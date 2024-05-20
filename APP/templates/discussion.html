@@ -17,17 +17,13 @@
     .comment-header {
         font-weight: bold;     
     }
-    #commentChart {
-        margin-left: auto;
-        margin-right: 10%; 
-        margin-top: 1%;
-    }
     .stock-container {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         grid-gap: 10px;
         max-width: 600px;
         margin: auto;
+        padding-right: 10%;
     }
     
     .stock-item {
@@ -43,25 +39,9 @@
         margin-bottom: 5px;
     }
     
-    .stock-price {
-        font-size: 24px;
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
-    
     .stock-change {
         font-size: 14px;
         font-weight: bold;
-    }
-    
-    .green .stock-price,
-    .green .stock-change {
-        color: #4CAF50;  /* Green */
-    }
-    
-    .red .stock-price,
-    .red .stock-change {
-        color: #f44336;  /* Red */
     }
     .content-row {
         display: flex;
@@ -69,66 +49,64 @@
         align-items: flex-start; 
         margin-top: 20px; 
     }
-    .stock-container, #commentChart {
-        flex: 1 1 45%;
+    .stock-container{
+        margin-left: 10%;
         min-width: 300px;
     }
-    
     #commentChart {
-        height: auto;
-        aspect-ratio: 2 / 1;
+        transform: scale(0.8);  
+        transform-origin: center;  
+        margin-right: 30%;
     }
     @keyframes flash {
         0%, 100% { background-color: transparent; }
         50% { background-color: yellow; }
     }
-    
     .stock-price {
         font-size: 24px;
         font-weight: bold;
         margin-bottom: 5px;
-        transition: all 0.3s ease-in-out;  /* 平滑過渡效果 */
+        transition: all 0.3s ease-in-out;  
     }
-    
     .stock-price.flash {
-        animation: flash 1s; /* 執行閃爍動畫 */
+        animation: flash 1s; 
     }
     </style>
     <div class="discussion-content">
         
         <div class="content-row">
             <div class="stock-container">
-                <div class="stock-item green" id="stock-binancebtcusdt">
+                <div class="stock-item" id="stock-binancebtcusdt">
                     <div class="stock-title">BTC</div>
-                    <div class="stock-price" id="price-binancebtcusdt">-</div>
+                    <div class="stock-price" id="price-binance:btcusdt">-</div>
                 </div>
-                <div class="stock-item green" id="stock-nvda">
+                <div class="stock-item" id="stock-nvda">
                     <div class="stock-title">NVDA</div>
                     <div class="stock-price" id="price-nvda">-</div>
                 </div>
-                <div class="stock-item green" id="stock-tsla">
+                <div class="stock-item" id="stock-tsla">
                     <div class="stock-title">TSLA</div>
                     <div class="stock-price" id="price-tsla">-</div>
                 </div>
-                <div class="stock-item red" id="stock-googl">
+                <div class="stock-item" id="stock-googl">
                     <div class="stock-title">GOOGL</div>
                     <div class="stock-price" id="price-googl">-</div>
                 </div>
-                <div class="stock-item green" id="stock-msft">
+                <div class="stock-item" id="stock-msft">
                     <div class="stock-title">MSFT</div>
-                    <div the="stock-price" id="price-msft">-</div>
+                    <div class="stock-price" id="price-msft">-</div>
                 </div>
-                <div class="stock-item green" id="stock-aapl">
+                <div class="stock-item" id="stock-aapl">
                     <div class="stock-title">AAPL</div>
-                    <div the="stock-price" id="price-aapl">-</div>
+                    <div class="stock-price" id="price-aapl">-</div>
                 </div>
-                <div class="stock-item green" id="stock-amzn">
+                <div class="stock-item" id="stock-amzn">
                     <div class="stock-title">AMZN</div>
-                    <div the="stock-price" id="price-amzn">-</div>
+                    <div class="stock-price" id="price-amzn">-</div>
                 </div>
-                <div class="stock-item green" id="stock-meta">
-                    <div the="stock-title">META</div>
-                    <div the="stock-price" id="price-meta">-</div>
+                <div class="stock-item" id="stock-meta">
+                    <div class="stock-title">META</div>
+                    <div class="stock-price" id="price-meta">-</div>
                 </div>
             </div>
             <canvas id="commentChart"></canvas>
@@ -140,7 +118,7 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label for="company">Select a company or overall economy:</label>
             <select id="company" name="company">
-                <option value="overall">Overall Economy</option>
+                <option value="Overall Economy">Overall Economy</option>
                 <option value="NVDA">NVDA</option>
                 <option value="GOOG">GOOG</option>
                 <option value="AMZN">AMZN</option>
@@ -210,7 +188,8 @@
                     }]
                 },
                 options: {
-                    indexAxis: 'y',
+                    responsive: true,  
+                    maintainAspectRatio: true, 
                     scales: {
                         y: {
                             beginAtZero: true
@@ -237,31 +216,33 @@
         });
         
         document.addEventListener('DOMContentLoaded', function() {
-            var socket = io.connect('http://' + document.domain + ':' + location.port + '/stock', {transports: ['websocket']});
-            
-            socket.on('connect', function() {
-                console.log("Connected to the server.");  
-            });
-        
-            socket.on('update_prices', function(data) {
-                console.log("Received prices: ", data);  
-                let prices = data.data;
-                Object.keys(prices).forEach(function(company) {
-                    var priceElement = document.getElementById('price-' + company.toLowerCase().replace(/[^a-zA-Z0-9]/g, ''));
-                    if (priceElement) {
-                        if (priceElement.textContent !== prices[company].toString()) {
-                            priceElement.textContent = prices[company];
-                            priceElement.classList.add('flash');  
-                            setTimeout(function() {
-                                priceElement.classList.remove('flash');
-                            }, 1000); 
-                        }
-                    }
-                });
-            });
+            setInterval(fetchStockData, 5000);
         });
         
+        function fetchStockData() {
+            fetch('/stock_price')
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Received stock data: ", data);
+                    updateStockPrices(data);
+                })
+                .catch(error => console.error('Error fetching stock data:', error));
+        }
         
+        function updateStockPrices(data) {
+            Object.keys(data).forEach(function(company) {
+                var priceElement = document.getElementById('price-' + company.toLowerCase());
+                if (priceElement) {
+                    if (priceElement.textContent !== data[company].toString()) {
+                        priceElement.textContent = data[company];
+                        priceElement.classList.add('flash');
+                        setTimeout(function() {
+                            priceElement.classList.remove('flash');
+                        }, 1000);
+                    }
+                }
+            });
+        }        
         
     </script>
 {% endblock %}

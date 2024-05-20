@@ -1,0 +1,39 @@
+{
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "runtimePlatform": {
+        "operatingSystemFamily": "LINUX",
+        "cpuArchitecture": "ARM64"
+    },
+    "family": "ecs-consumer-v1",
+    "memory": "6 GB",
+    "cpu": "1 vCPU",
+    "executionRoleArn": "arn:aws:iam::975050306382:role/ecsTaskExecutionRole",
+    "networkMode": "awsvpc",
+    "containerDefinitions": [
+        {
+            "name": "pyspark-consumer",
+            "image": "975050306382.dkr.ecr.ap-southeast-1.amazonaws.com/consumer",
+            "essential": true,
+            "portMappings": [
+              {
+                "name": "pyspark-consumer-5052-tcp",
+                "containerPort": 5052,
+                "hostPort": 5052,
+                "protocol": "tcp", 
+                "appProtocol": "http"
+              }
+            ],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/pyspark-consumer",
+                    "awslogs-region": "ap-southeast-1",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            }
+          }]
+        
+    
+}
