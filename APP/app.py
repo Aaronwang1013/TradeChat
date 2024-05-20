@@ -47,6 +47,17 @@ DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@c
 client = MongoClient(DATABASE_URL)
 
 
+def get_username(access_token):
+    access_token = access_token.split(' ')[1]
+    decoded_token = jwt.decode(
+        access_token, 
+        Config.SECRET_KEY, 
+        algorithms=Config.JWT_ALGORITHM
+    )
+    username = decoded_token['sub']
+    email = decoded_token['email']
+    return username, email
+
 def token_required(func):
     @wraps(func)
     def decorated_function(*args, **kwargs):
@@ -260,24 +271,17 @@ def stock_price():
 
 @app.route('/sentiment')
 def sentiment():
+    company_list = ['Overall', 'AAPL', 'AMZN', 'GOOGL', 'MSFT', 'NVDA', 'TSLA', 'META']
     company = request.args.get("company")
-    if company == 'Overall':  
+    if company == 'Overall':
         data = get_reddit_sentiment()
-    elif company == 'AAPL':
+    elif company in company_list:
         data = get_sentiment_by_company(company)
-    elif company == 'AMZN':
-        data = get_sentiment_by_company(company)
-    elif company == 'GOOGL':
-        data = get_sentiment_by_company(company)
-    elif company == 'MSFT':
-        data = get_sentiment_by_company(company)
-    elif company == 'NVDA':
-        data = get_sentiment_by_company(company)
-    elif company == 'TSLA':
-        data = get_sentiment_by_company(company)
-    elif company == 'META':
-        data = get_sentiment_by_company(company)
+    else:
+        data = {"error": "Invalid company"}
+
     return data
+
 
 @app.route('/fear_greed_gauge')
 def fear_greed_gauge():
