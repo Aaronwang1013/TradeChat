@@ -3,30 +3,55 @@ name: Build and Deploy BackendApp to ECS
 
 on:
   push:
-    path:
+    paths:
       - 'APP/**'
     branches:
       - main
-env:
-  #Setting an envrioment variable for the AWS region
-  ECR_BACKEND_IMAGE: ${{ vars.ECR_BACKEND_IMAGE }}
-  AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-  ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}
-  ECS_BACKED_SERVICE: ${{ secrets.ECS_BACKED_SERVICE }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Login to AWS ECR
-        run: aws ecr get-login-password --region ${{ secrets.AWS_DEFAULT_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ECR_URL }}
-      - name: Build the Docker image
-        run: docker build -t ${{ secrets.AWS_ECR_URL }}/$ECR_BACKEND_IMAGE .
-      - name: Push the Docker image to ECR
-        run: docker push ${{ secrets.AWS_ECR_URL }}/$ECR_BACKEND_IMAGE
-      - name: Update ECS service
-        run: aws ecs update-service --cluster ${{ secrets.ECS_CLUSTER }} --service ${{ secrets.ECS_BACKED_SERVICE }} --force-new-deployment
+
+      - name: Set up QEMU for arm64
+        run: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+        if: runner.os == 'Linux'
+
+      - name: Set up Docker for arm64
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: linux/arm64
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }} 
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_DEFAULT_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com
+
+      - name: Build and push Docker image
+        run: |
+          cd APP
+          docker build -t flask .
+          docker tag flask:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/flask:latest
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_DEFAULT_REGION }}.amazonaws.com/flask:latest
+
+      - name: Deploy to ECS
+        uses: imehedi/actions-awscli-v2@latest
+        with:
+          args: ecs update-service --cluster tradechat-v1-Cluster-gCKiEfF6ACNl --service ecs-flask-service-v2} --force-new-deployment
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} 
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }} 
