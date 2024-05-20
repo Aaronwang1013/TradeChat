@@ -71,6 +71,23 @@
     .stock-price.flash {
         animation: flash 1s; 
     }
+    .pagination {
+        margin: 20px 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    .pagination a {
+        margin: 0 5px;
+        padding: 5px 10px;
+        background-color: #f7c815;
+        color: black;
+        text-decoration: none;
+        border-radius: 5px;
+    }
+    .pagination .current-page {
+        font-weight: bold;
+    }
     </style>
     <div class="discussion-content">
         
@@ -147,16 +164,11 @@
             {% if page > 1 %}
             <a href="{{ url_for('discussion', page=page-1) }}">Previous</a>
             {% endif %}
-            {% if page * 30 < total_comments %}
+            <span class="current-page">Page {{ page }} of {{ total_pages }}</span>
+            {% if page < total_pages %}
             <a href="{{ url_for('discussion', page=page+1) }}">Next</a>
             {% endif %}
         </div>
-        <a href="{{ url_for('profile') }}" class="user-icon">
-            <img src="{{ url_for('static', filename='images/user.png') }}" alt="Profile">
-            {% if username %}
-            <p>Hi, {{ username }}!</p>
-            {% endif %}
-        </a>
     </div>
 
     <script>

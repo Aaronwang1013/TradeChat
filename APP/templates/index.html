@@ -49,13 +49,14 @@
         <div id="plotly-chart"></div>
     </div>
     <div>
+    {% endblock %} 
     <a href="{{ url_for('profile') }}" class="user-icon">
         <img src="{{ url_for('static', filename='images/user.png') }}" alt="Profile">
         {% if username %}
             <p>Hi, {{ username }}!</p>
         {% endif %}
     </a>   
-    {% endblock %} 
+    
     
     
 </body>

@@ -42,6 +42,11 @@ timestamp = []
 prices = []
 
 
+## init mongo client
+DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+client = MongoClient(DATABASE_URL)
+
+
 def token_required(func):
     @wraps(func)
     def decorated_function(*args, **kwargs):
@@ -72,8 +77,14 @@ def generate_access_token(username, email):
     
 
 @app.route('/')
+@token_required
 def index(): 
-    return render_template('index.html', icons = icons)
+    access_token = request.cookies.get('access_token')
+    if access_token:
+        username, email = get_username(access_token)
+    else:
+        username = None
+    return render_template('index.html', icons = icons, username = username)
 
 
 @app.route('/home')
@@ -81,11 +92,7 @@ def index():
 def home():
     access_token = request.cookies.get('access_token')
     if access_token:
-        access_token = access_token.split(' ')[1]
-        decoded_token = jwt.decode(access_token, 
-                                Config.SECRET_KEY,
-                                algorithms=Config.JWT_ALGORITHM)
-        username = decoded_token['sub']
+        username, email = get_username(access_token)
     else:
         username = None
     return render_template('index.html', icons = icons, username=username)
@@ -104,8 +111,6 @@ def signup():
         if signupform.validate_on_submit() == True:
             flash(f'Account created for {username}!', 'success')
             # create a MongoClient to the running mongod instance
-            DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-            client = MongoClient(DATABASE_URL)
             # initialize collection
             collection = client['TradeChat']['User']
             # create a new user
@@ -138,8 +143,6 @@ def signin():
             email = loginform.email.data
             password = loginform.password.data
             # create a MongoClient to the running mongod instance
-            DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0"
-            client = MongoClient(DATABASE_URL)
             collection = client['TradeChat']['User']
             if email:
                 # find user in the database
@@ -169,12 +172,7 @@ def signout():
 def profile():
     access_token = request.cookies.get('access_token')
     if access_token:
-        access_token = access_token.split(' ')[1]
-        decoded_token = jwt.decode(access_token, 
-                                Config.SECRET_KEY,
-                                algorithms=Config.JWT_ALGORITHM)
-        username = decoded_token['sub']
-        email = decoded_token['email']
+        username, email = get_username(access_token)
         return render_template('profile.html', username=username, email=email, icons = icons)
     else:
         flash("You need to sign in to access your profile", "warning")
@@ -201,32 +199,28 @@ def twitter_sentiment():
 
 @app.route('/discussion')
 def discussion():
+    access_token = request.cookies.get('access_token')
+    if access_token:
+        username, email = get_username(access_token)
     page = request.args.get('page', 1, type=int)
     per_page = 30
-    DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-    client = MongoClient(DATABASE_URL)
     collection = client['TradeChat']['comment']
     comments = collection.find().sort('_id', -1).skip((page-1)*per_page).limit(per_page)
     total_comments = collection.count_documents({})
     total_pages = total_comments // per_page + (1 if total_comments % per_page > 0 else 0)
     logger.info(f"Displaying discussion page {page} with {total_comments} comments.")
-    return render_template('discussion.html', comments=comments, page=page, total_comments=total_comments, total_pages=total_pages, icons = icons)
+    return render_template('discussion.html', comments=comments, page=page, total_comments=total_comments, 
+                           total_pages=total_pages, icons = icons, username = username)
 
 
 @app.route('/post_comment', methods=['POST'])
 @token_required
 def post_comment():
-    DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-    client = MongoClient(DATABASE_URL)
     collection = client['TradeChat']['comment']
     access_token = request.cookies.get('access_token')
     if access_token:
         timestamp = datetime.utcnow()
-        access_token = access_token.split(' ')[1]
-        decoded_token = jwt.decode(access_token, 
-                                Config.SECRET_KEY,
-                                algorithms=Config.JWT_ALGORITHM)
-        username = decoded_token['sub']
+        username, email = get_username(access_token)
         comment = request.form['comment']
         company = request.form['company']
         comment_data = {
@@ -251,7 +245,10 @@ def post_comment():
 
 @app.route('/stock')
 def stock():
-    return render_template('stock.html', icons = icons)
+    access_token = request.cookies.get('access_token')
+    if access_token:
+        username, email = get_username(access_token)
+    return render_template('stock.html', icons = icons, username = username)
 
 
 @app.route('/stock_price')
@@ -292,7 +289,7 @@ def fear_greed_gauge():
 
 @app.route('/fear_greed_updated_time')
 def fear_greed_updated_time():
-    time.sleep(3)
+    time.sleep(1)
     last_update_time = get_fear_greed_updated_time()
     taiwan_timezone = pytz.timezone('Asia/Taipei')
     taiwan_time = last_update_time.astimezone(taiwan_timezone)
