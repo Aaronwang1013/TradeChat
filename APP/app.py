@@ -42,6 +42,9 @@ timestamp = []
 prices = []
 
 
+DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+client = MongoClient(DATABASE_URL)
+
 def token_required(func):
     @wraps(func)
     def decorated_function(*args, **kwargs):
@@ -138,23 +141,21 @@ def signin():
             email = loginform.email.data
             password = loginform.password.data
             # create a MongoClient to the running mongod instance
-            DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=secure&appName=Cluster0"
-            client = MongoClient(DATABASE_URL)
             collection = client['TradeChat']['User']
             if email:
                 # find user in the database
                 user_data = collection.find_one({"email": email}, {"_id": 0, "username": 1, "password": 1})
-                if check_password_hash(user_data.get('password'), password):
-                    flash('Login Successful. You will now be redirected to the homepage.', 'success')
+                if user_data and check_password_hash(user_data.get('password'), password):
+                    flash('Login Successful', 'success')
                     username = user_data.get('username')
                     access_token = generate_access_token(username, email)
-                    response = make_response(redirect(url_for('home')))
+                    response = make_response(render_template('index.html', icons=icons, username=username))
                     response.set_cookie('access_token',  f'Bearer {access_token}')
                     return response
-            else:
-                flash('Login Unsuccessful. Please check username and password', 'danger')
-
-        return jsonify({'error': 'Invalid form data'}, 403)
+                else:
+                    flash('Login Unsuccessful. Please check username and password', 'danger')
+                    return redirect(url_for('signin'))
+        flash('Invalid form data. Please try again.', 'danger')
     return render_template('signin.html', form=loginform)
 
 
