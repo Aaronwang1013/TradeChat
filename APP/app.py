@@ -88,7 +88,6 @@ def generate_access_token(username, email):
     
 
 @app.route('/')
-@token_required
 def index(): 
     access_token = request.cookies.get('access_token')
     if access_token:
