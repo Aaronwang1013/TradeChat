@@ -35,7 +35,6 @@ def read_twitter_data(company=None):
     tweet_df['day_date'] = pd.to_datetime(tweet_df['day_date'], unit='ms')
     stock_df = pd.DataFrame(stock_data)
     stock_df['day_date'] = pd.to_datetime(stock_df['day_date'], unit='ms')
-    client.close()
     return tweet_df, stock_df
 
 
@@ -81,7 +80,6 @@ def get_realtime_data():
     prices = {}
     for record in latest_data:
         prices[record['symbol']] = record['price']
-    client.close()
     return prices
 
 
@@ -124,7 +122,6 @@ def get_reddit_sentiment():
                 sentiment_counts_by_date[comment_date][comment_sentiment] += 1
     average_scores = {date: sum(scores) / len(scores) for date, scores in sentiment_scores.items()}
     average_scores_with_comments = {date: sum(scores) / len(scores) for date, scores in sentiment_scores_with_comments.items()}
-    client.close()
     result = {
         'scores': average_scores,
         'sentiment_counts': sentiment_counts,
@@ -169,7 +166,6 @@ def get_sentiment_by_company(company):
                 sentiment_counts_by_date[comment_date][comment_sentiment] += 1
                 sentiment_counts[sentiment] += 1
     average_scores = {date: sum(scores) / len(scores) for date, scores in sentiment_scores.items()}
-    client.close()
     result = {
         'scores': average_scores,
         'sentiment_counts': sentiment_counts,
