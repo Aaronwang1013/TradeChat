@@ -72,6 +72,8 @@ if __name__ == "__main__":
         .option("kafka.bootstrap.servers", f"{Config.KAFKA_SERVER}:{Config.KAFKA_PORT}") \
         .option("subscribe", "TSLA,NVDA,AMZN,GOOG,AAPL,BTC,MSFT,META") \
         .load()
+        
+        
     
     decoded_df = avro_decode(raw_df, trades_schema)
     final_df = parse_df(decoded_df)

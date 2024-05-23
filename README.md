@@ -27,7 +27,10 @@ Trade Chat provides a platform for users to discuss companies of interest and re
  ![alt text](./docs/stock_data_pipeline.png)
 ## Demo
 
+
 ## Deployment
 
 ## Technologies Used
+```
+
 ```
