@@ -157,15 +157,16 @@ def signin():
             if email:
                 # find user in the database
                 user_data = collection.find_one({"email": email}, {"_id": 0, "username": 1, "password": 1})
-                if check_password_hash(user_data.get('password'), password):
-                    flash('Login Successful. You will now be redirected to the homepage.', 'success')
-                    username = user_data.get('username')
-                    access_token = generate_access_token(username, email)
-                    response = make_response(redirect(url_for('home')))
-                    response.set_cookie('access_token',  f'Bearer {access_token}')
-                    return response
-            else:
-                flash('Login Unsuccessful. Please check username and password', 'danger')
+                if user_data:
+                    if check_password_hash(user_data.get('password'), password):
+                        flash('Login Successful. You will now be redirected to the homepage.', 'success')
+                        username = user_data.get('username')
+                        access_token = generate_access_token(username, email)
+                        response = make_response(redirect(url_for('home')))
+                        response.set_cookie('access_token',  f'Bearer {access_token}')
+                        return response
+                else:
+                    flash('Login Unsuccessful. Please check username and password', 'danger')
     return render_template('signin.html', form=loginform)
 
 
