@@ -91,12 +91,7 @@ def generate_access_token(username, email):
 
 @app.route('/')
 def index(): 
-    access_token = request.cookies.get('access_token')
-    if access_token:
-        username, email = get_username(access_token)
-    else:
-        username = None
-    return render_template('index.html', icons = icons, username = username)
+    return render_template('index.html', icons = icons)
 
 
 @app.route('/home')
