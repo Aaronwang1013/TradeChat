@@ -21,7 +21,7 @@ from datetime import datetime, timedelta
 # process real time data
 import time
 import logging
-
+import os
 
 logging.basicConfig(
     level=logging.INFO,
@@ -37,7 +37,9 @@ app.secret_key = Config.SECRET_KEY
 csrf = CSRFProtect(app)
 
 
-icons = ['TSLA.png', 'AAPL.png', 'AMZN.png', 'GOOG.png', 'META.png', 'MSFT.png', 'NVDA.png']
+image_folder = os.path.join(app.static_folder, 'images/company')
+icons = [f for f in os.listdir(image_folder) if os.path.isfile(os.path.join(image_folder, f))]
+
 timestamp = []
 prices = []
 
