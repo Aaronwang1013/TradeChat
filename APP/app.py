@@ -206,6 +206,7 @@ def twitter_sentiment():
 
 
 @app.route('/discussion')
+@token_required
 def discussion():
     access_token = request.cookies.get('access_token')
     if access_token:
@@ -252,6 +253,7 @@ def post_comment():
 
 
 @app.route('/stock')
+@token_required
 def stock():
     access_token = request.cookies.get('access_token')
     if access_token:
