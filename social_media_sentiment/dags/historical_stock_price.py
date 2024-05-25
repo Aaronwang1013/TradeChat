@@ -37,4 +37,4 @@ def insert_to_mongo(data):
 
 if __name__ == '__main__':
     tickers = ['AAPL', 'TSLA', 'NVDA', 'MSFT', 'AMZN', 'META', 'GOOG']
-    extract_ticker(tickers, '2020-01-01', '2024-04-28')
+    extract_ticker(tickers, '2024-04-28', '2024-05-24')

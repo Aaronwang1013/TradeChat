@@ -70,8 +70,10 @@ if __name__ == "__main__":
         .format("kafka") \
         .option("startingOffsets", "latest") \
         .option("kafka.bootstrap.servers", f"{Config.KAFKA_SERVER}:{Config.KAFKA_PORT}") \
-        .option("subscribe", "TSLA,NVDA,AMZN,GOOG,AAPL,BTC,MSFT,META") \
+        .option("subscribe", "BTC") \
         .load()
+        
+        
     
     decoded_df = avro_decode(raw_df, trades_schema)
     final_df = parse_df(decoded_df)

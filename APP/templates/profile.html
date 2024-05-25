@@ -16,6 +16,46 @@
                     <h2>TradeChat Backtesting System</h2>
                     <p>Welcome to the TradeChat Backtesting System. Currently, we offer two types of strategy backtesting analysis, both using the basic Buy & Hold strategy as a benchmark. After entering the required information, click 'submit' to view the analysis results! We will continue to update and provide additional backtesting capabilities for more strategies in the future. If you have any suggestions, please feel free to contact us directly at: <a href="mailto:qazxsw523625@gmail.com">qazxsw523625@gmail.com</a></p>
                 </div>
+                <div class="strategy-description" style="background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 5px; padding: 20px; margin-bottom: 20px;">
+                    <h3>Strategy Explanation</h3>
+                    <h4>1. Benchmark Strategy (Buy and Hold)</h4>
+                    <ul>
+                        <li><strong>Description</strong>: Buy and Hold is a straightforward investment strategy. You purchase a fixed number of shares at the beginning and hold onto them regardless of market fluctuations.</li>
+                        <li><strong>Steps</strong>:
+                            <ul>
+                                <li>Purchase a fixed amount of stock at the initial price.</li>
+                                <li>Hold the stocks without selling.</li>
+                                <li>The portfolio's final value depends on the long-term performance of the stock.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <h4>2. MA Strategy (Simple Moving Average)</h4>
+                    <ul>
+                        <li><strong>Description</strong>: The Simple Moving Average (SMA) strategy is a technical analysis approach that uses short-term and long-term SMAs to generate buy and sell signals.</li>
+                        <li><strong>Steps</strong>:
+                            <ul>
+                                <li>Calculate the 50-day and 200-day SMAs (SMA50 and SMA200).</li>
+                                <li>Generate a buy signal when the SMA50 crosses above the SMA200.</li>
+                                <li>Generate a sell signal when the SMA50 crosses below the SMA200.</li>
+                                <li>Trade based on these signals and track the portfolio's value.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Note</strong>: At least 200 days of historical data are required to calculate the 200-day SMA effectively.</li>
+                    </ul>
+                    <h4>3. Mean Reversion Strategy</h4>
+                    <ul>
+                        <li><strong>Description</strong>: The Mean Reversion strategy assumes that prices tend to revert to their mean. When prices deviate significantly from the mean, they will eventually return to the average price.</li>
+                        <li><strong>Steps</strong>:
+                            <ul>
+                                <li>Calculate the 25-day moving average and standard deviation.</li>
+                                <li>Set the upper and lower bands (mean ± 2 * standard deviation).</li>
+                                <li>Generate a buy signal when the price falls below the lower band.</li>
+                                <li>Generate a sell signal when the price rises above the upper band.</li>
+                                <li>Trade based on these signals and track the portfolio's value.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
             </div>
             <div class="col-md-6">
                 <form id="backtestForm" onsubmit="submitBacktest(event)">

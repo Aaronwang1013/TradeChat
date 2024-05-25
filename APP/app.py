@@ -21,7 +21,7 @@ from datetime import datetime, timedelta
 # process real time data
 import time
 import logging
-
+import os
 
 logging.basicConfig(
     level=logging.INFO,
@@ -37,7 +37,9 @@ app.secret_key = Config.SECRET_KEY
 csrf = CSRFProtect(app)
 
 
-icons = ['TSLA.png', 'AAPL.png', 'AMZN.png', 'GOOG.png', 'META.png', 'MSFT.png', 'NVDA.png']
+image_folder = os.path.join(app.static_folder, 'images/company')
+icons = [f for f in os.listdir(image_folder) if os.path.isfile(os.path.join(image_folder, f))]
+
 timestamp = []
 prices = []
 
@@ -88,14 +90,8 @@ def generate_access_token(username, email):
     
 
 @app.route('/')
-@token_required
 def index(): 
-    access_token = request.cookies.get('access_token')
-    if access_token:
-        username, email = get_username(access_token)
-    else:
-        username = None
-    return render_template('index.html', icons = icons, username = username)
+    return render_template('index.html', icons = icons)
 
 
 @app.route('/home')
@@ -158,15 +154,16 @@ def signin():
             if email:
                 # find user in the database
                 user_data = collection.find_one({"email": email}, {"_id": 0, "username": 1, "password": 1})
-                if check_password_hash(user_data.get('password'), password):
-                    flash('Login Successful. You will now be redirected to the homepage.', 'success')
-                    username = user_data.get('username')
-                    access_token = generate_access_token(username, email)
-                    response = make_response(redirect(url_for('home')))
-                    response.set_cookie('access_token',  f'Bearer {access_token}')
-                    return response
-            else:
-                flash('Login Unsuccessful. Please check username and password', 'danger')
+                if user_data:
+                    if check_password_hash(user_data.get('password'), password):
+                        flash('Login Successful. You will now be redirected to the homepage.', 'success')
+                        username = user_data.get('username')
+                        access_token = generate_access_token(username, email)
+                        response = make_response(redirect(url_for('home')))
+                        response.set_cookie('access_token',  f'Bearer {access_token}')
+                        return response
+                else:
+                    flash('Login Unsuccessful. Please check username and password', 'danger')
     return render_template('signin.html', form=loginform)
 
 
@@ -209,6 +206,7 @@ def twitter_sentiment():
 
 
 @app.route('/discussion')
+@token_required
 def discussion():
     access_token = request.cookies.get('access_token')
     if access_token:
@@ -255,6 +253,7 @@ def post_comment():
 
 
 @app.route('/stock')
+@token_required
 def stock():
     access_token = request.cookies.get('access_token')
     if access_token:
