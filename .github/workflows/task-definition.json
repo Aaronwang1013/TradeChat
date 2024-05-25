@@ -1,9 +1,9 @@
 {
-    "taskDefinitionArn": "arn:aws:ecs:${{ secrets.AWS_DEFAULT_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:task-definition/ecs-flask-v1:32",
+    "taskDefinitionArn": "arn:aws:ecs:__AWS_DEFAULT_REGION__:__AWS_ACCOUNT_ID__:task-definition/ecs-flask-v1:32",
     "containerDefinitions": [
         {
             "name": "flask",
-            "image": "${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.ap-southeast-1.amazonaws.com/flask:latest",
+            "image": "__AWS_ACCOUNT_ID__.dkr.ecr.__AWS_DEFAULT_REGION__.amazonaws.com/flask:latest",
             "cpu": 1024,
             "portMappings": [
                 {
@@ -23,7 +23,7 @@
                 "options": {
                     "awslogs-create-group": "true",
                     "awslogs-group": "/ecs/ecs-flask-v1",
-                    "awslogs-region": "${{ secrets.AWS_DEFAULT_REGION }}",
+                    "awslogs-region": "__AWS_DEFAULT_REGION__",
                     "awslogs-stream-prefix": "ecs"
                 },
                 "secretOptions": []
@@ -32,8 +32,8 @@
         }
     ],
     "family": "ecs-flask-v1",
-    "taskRoleArn": "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ecsTaskExecutionRole",
-    "executionRoleArn": "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ecsTaskExecutionRole",
+    "taskRoleArn": "arn:aws:iam::__AWS_ACCOUNT_ID__:role/ecsTaskExecutionRole",
+    "executionRoleArn": "arn:aws:iam::__AWS_ACCOUNT_ID__:role/ecsTaskExecutionRole",
     "networkMode": "host",
     "revision": 32,
     "volumes": [],
@@ -81,6 +81,6 @@
         "operatingSystemFamily": "LINUX"
     },
     "registeredAt": "2024-05-25T08:46:52.175Z",
-    "registeredBy": "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:root",
+    "registeredBy": "arn:aws:iam::__AWS_ACCOUNT_ID__:root",
     "tags": []
 }
