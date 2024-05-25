@@ -5,4 +5,3 @@
 **/*.log
 deploy.sh
 deploy2.sh
-.github/workflows/.aws
