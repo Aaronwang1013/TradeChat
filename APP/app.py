@@ -43,7 +43,6 @@ icons = [f for f in os.listdir(image_folder) if os.path.isfile(os.path.join(imag
 timestamp = []
 prices = []
 
-
 ## init mongo client
 DATABASE_URL = f"mongodb+srv://{Config.MONGODB_USER}:{Config.MONGODB_PASSWORD}@cluster0.ibhiiti.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 client = MongoClient(DATABASE_URL)
