@@ -1,6 +1,6 @@
 # TradeChat
 
-TradeChat provides a platform for users to discuss companies of interest and receive real-time feedback on market sentiment analysis for these companies. Additionally, it offers basic backtesting and forecasting tools to users, creating a comprehensive stock trading community platform.
+Trade Chat provides a platform for users to discuss companies of interest and receive real-time feedback on market sentiment analysis for these companies. Additionally, it offers basic backtesting and forecasting tools to users, creating a comprehensive stock trading community platform.
 
 Website: [TradeChat](https://tradechat.online/)
 
@@ -8,9 +8,8 @@ Website: [TradeChat](https://tradechat.online/)
 - [TradeChat](#tradechat)
   - [Table of contents](#table-of-contents)
   - [Feature](#feature)
-  - [Overall Architecture](#overall-architecture)
+  - [System Architecture](#system-architecture)
   - [Technical Detail](#technical-detail)
-  - [Technical Detail](#technical-detail-1)
     - [Real-time market price](#real-time-market-price)
   - [Demo](#demo)
   - [Deployment](#deployment)
@@ -23,26 +22,26 @@ Website: [TradeChat](https://tradechat.online/)
 - Backtesting system.
 - Join a community of traders to discuss companies of interest.
 
-## Overall Architecture
+## System Architecture
 ![alt text](./docs/system_architecture.png)
 
-- Webserver: 
+- Front-end: 
   - HTML, CSS and Javascript are used to create the front-end of the application.
-  - Plotly is used to create interactive plots for the Fear & Greed Index and sentiment  analysis.
+  - Plotly is used to create interactive plots for the Fear & Greed Index and sentiment analysis.
+
+
+- Back-end:
   - A Flask-based webserver is used to serve the front-end and handle API requests.
   - Kafka is used to stream real-time market data from FinnhubAPI, pyspark is used to process the data and store in MongoDB.
   - Reddit posts and comments are fetched using PRAW, and sentiment analysis is done using vaderSentiment(https://pypi.org/project/vaderSentiment/). Airflow is used to schedule the sentiment analysis job.
-  - Yahoo Finance API is used to fetch historical stock data for backtesting.
 
-
-## Technical Detail
+A brief description of the system architecture:
 
 Containerization: Docker is used to containerize all the application. This allows for easy deployment and scaling of the application.
 
-Deployment: The application is deployed using either EC2 or Fargate. The instances are managed by ECS, which handles scaling, load balancing, and monitoring of the application.
+Streaming Data: The application uses Kafka to stream real-time market data from FinnhubAPI, pyspark is then used to process the data and store in MongoDB.
 
-Database: MongoDB is used to store the processed market data and sentiment analysis. This allows for easy retrieval of data and analysis.
-
+Sentiment analysis: The application uses PRAW to fetch Reddit posts and comments, and vaderSentiment(https://pypi.org/project/vaderSentiment/) to analyze the sentiment of the posts and comments.
 
 
 
@@ -55,7 +54,6 @@ Database: MongoDB is used to store the processed market data and sentiment analy
 ## Deployment
 
 ## Technologies Used
-
 ```
 
 ```
