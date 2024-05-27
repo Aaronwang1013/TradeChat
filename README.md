@@ -9,11 +9,9 @@ Website: [TradeChat](https://tradechat.online/)
   - [Table of contents](#table-of-contents)
   - [Feature](#feature)
   - [System Architecture](#system-architecture)
-  - [Technical Detail](#technical-detail)
-    - [Real-time market price](#real-time-market-price)
+  - [Real-time market price](#real-time-market-price)
+  - [CI/CD](#cicd)
   - [Demo](#demo)
-  - [Deployment](#deployment)
-  - [Technologies Used](#technologies-used)
 
 ## Feature
 - Real-time market price of seven big tech companies from FinnhubAPI.
@@ -45,15 +43,36 @@ Sentiment analysis: The application uses PRAW to fetch Reddit posts and comments
 
 
 
-## Technical Detail
- ### Real-time market price
+
+
+## Real-time market price
  ![alt text](./docs/stock_data_pipeline.png)
+Data ingestion layer - A containerized python application called Finnhub Producer fetches real-time market data from the Finnhub websocket API. The retrieved messages are encoded in Avro format as specificed in trades.asvc file and sends the messages into kafka broker.
+
+Message broker layer - Messages from Finnhub Producer are recieved by Kafka broker. Kafka is a distributed streaming platform that allows for the storage and processing of real-time data streams. Data is stored in its respective topic according to the company.
+
+Data processing layer - A containerized pyspark application called Finnhub Consumer reads the messages from the kafka broker and processes the data. The data is then stored in MongoDB.
+
+  
+  
+
+## CI/CD
+Github Actions is used for CI/CD. The CI/CD pipeline is triggered when a new commit is pushed to the main branch. The pipeline consists of the following steps:
+
+ ![alt text](./docs/CICD.png)
+
+
+
 ## Demo
 
+real-time market price and most popular company in our community.
+![alt text](./docs/streaming.gif)
 
-## Deployment
 
-## Technologies Used
-```
+make a post in our community.
 
-```
+![alt text](./docs/comment.gif)
+
+
+Sentiment analysis of Reddit posts and comments.
+![alt text](./docs/redditComment.gif)
