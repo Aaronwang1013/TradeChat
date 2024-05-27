@@ -9,7 +9,7 @@ Website: [TradeChat](https://tradechat.online/)
   - [Table of contents](#table-of-contents)
   - [Feature](#feature)
   - [System Architecture](#system-architecture)
-  - [Technical Detail](#technical-detail)
+  - [Data Pipeline](#data-pipeline)
     - [Real-time market price](#real-time-market-price)
   - [Demo](#demo)
   - [Deployment](#deployment)
@@ -45,7 +45,9 @@ Sentiment analysis: The application uses PRAW to fetch Reddit posts and comments
 
 
 
-## Technical Detail
+
+
+## Data Pipeline
  ### Real-time market price
  ![alt text](./docs/stock_data_pipeline.png)
 ## Demo
