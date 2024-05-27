@@ -211,6 +211,8 @@ def discussion():
     access_token = request.cookies.get('access_token')
     if access_token:
         username, email = get_username(access_token)
+    else:
+        username = None
     page = request.args.get('page', 1, type=int)
     per_page = 30
     collection = client['TradeChat']['comment']
@@ -258,6 +260,8 @@ def stock():
     access_token = request.cookies.get('access_token')
     if access_token:
         username, email = get_username(access_token)
+    else:
+        username = None
     return render_template('stock.html', icons = icons, username = username)
 
 
