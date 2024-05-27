@@ -209,7 +209,7 @@ def twitter_sentiment():
 @token_required
 def discussion():
     access_token = request.cookies.get('access_token')
-    if access_token:
+    if access_token is not None:
         username, email = get_username(access_token)
     else:
         username = None
@@ -258,7 +258,7 @@ def post_comment():
 @token_required
 def stock():
     access_token = request.cookies.get('access_token')
-    if access_token:
+    if access_token is not None:
         username, email = get_username(access_token)
     else:
         username = None
