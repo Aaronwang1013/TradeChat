@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  ECR_REPOSITORY: flask
+  ECR_REPOSITORY: flask-app
   ECS_SERVICE: ecs-flask-service-v2
   ECS_CLUSTER: tradechat-v1-Cluster-gCKiEfF6ACNl
   ECS_TASK_DEFINITION: .github/workflows/task-definition.json

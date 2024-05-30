@@ -175,7 +175,7 @@ def insert_to_mongo_by_company(data, company):
         if data:
             collection.insert_many(data)
         client.close()
-        logging.info(f"{len(data)} data inserted to MongoDB at: {inserted_at}.")
+        logging.info(f"{len(data)} data inserted to MongoDB at: {inserted_at} for {company}.")
     except Exception as e:
         logging.error("Failed to insert data to MongoDB: %s", e)
 
@@ -183,6 +183,21 @@ def insert_to_mongo_by_company(data, company):
 
 
 if __name__ == '__main__':
-    data = get_subreddit_posts('google')
-    doc = parse_comment(data)
-    insert_to_mongo_by_company((doc), 'GOOGL_reddit')
+    # data = get_subreddit_posts('google')
+    # doc = parse_comment(data)
+    # insert_to_mongo_by_company((doc), 'GOOGL_reddit')
+    tickers = ['AAPL', 'TSLA', 'NVDA_Stock', 'MSFT', 'amzn',
+        'meta', 'google']
+
+    categories = ['stock', 'investing', 'StockMarket', 
+            'wallstreetbets']
+    for i in categories:
+        posts = get_subreddit_posts(i)
+        data = parse_comment(posts)
+        insert_to_mongo(data)
+    collection = ['AAPL_reddit', 'TSLA_reddit', 'NVDA_reddit', 'MSFT_reddit', 
+                  'AMZN_reddit', 'META_reddit', 'GOOGL_reddit']
+    for index, i in enumerate(tickers):
+        posts = get_subreddit_posts(i)
+        data = parse_comment(posts)
+        insert_to_mongo_by_company(data, collection[index])
