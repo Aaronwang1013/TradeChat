@@ -25,7 +25,7 @@ Website: [TradeChat](https://tradechat.online/)
 ## System Architecture
 ![alt text](./docs/system_architecture.png)
 
-- Front-end: 
+- Front-end:
   - HTML, CSS and Javascript are used to create the front-end of the application.
   - Plotly is used to create interactive plots for the Fear & Greed Index and sentiment analysis.
 
