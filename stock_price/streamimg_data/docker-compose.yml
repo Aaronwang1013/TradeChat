@@ -18,6 +18,7 @@ services:
       - "9092:9092"
     environment:
       - ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_LOG_RETENTION_BYTES=1073741824
     depends_on:
       - zookeeper
     networks:
@@ -29,6 +30,13 @@ services:
     ports:
       - 8001:80
     command: sh -c 'pip install kafka-python && tail -f /dev/null'
+    environment:
+      - KAFKA_QUEUE_BUFFERING_MAX_MESSAGES=1000000
+      - KAFKA_QUEUE_BUFFERING_MAX_KBYTES=10485760
+      - KAFKA_BATCH_NUM_MESSAGES=5000
+      - KAFKA_LINGER_MS=500
+      - KAFKA_RETRIES=5
+      - KAFKA_RETRY_BACKOFF_MS=500
     volumes:
       - ./FinnhubProducer:/app
     networks:

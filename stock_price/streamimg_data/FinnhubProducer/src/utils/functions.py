@@ -21,7 +21,18 @@ def ticker_validator(finnhub_client, ticker):
 
 def load_producer(kafka_server):
     # return Producer(bootstrap_servers=kafka_server)
-    return Producer({'bootstrap.servers': kafka_server})
+    conf = {
+        'bootstrap.servers': kafka_server,
+        'queue.buffering.max.messages': 1000000,
+        'queue.buffering.max.kbytes': 10485760,
+        'batch.num.messages': 5000,
+        'linger.ms': 500,
+        'retries': 5,
+        'retry.backoff.ms': 500,
+        'default.topic.config': {'acks': 'all'}
+    }
+    return Producer(conf)
+    # return Producer({'bootstrap.servers': kafka_server})
 
 def load_avro_schema(schema_path):
     return avro.schema.parse(open(schema_path).read())
